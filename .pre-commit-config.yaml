@@ -1,0 +1,46 @@
+---
+repos:
+  - repo: https://github.com/PyCQA/doc8.git
+    rev: 0.8.1rc1
+    hooks:
+      - id: doc8
+  - repo: https://github.com/python/black.git
+    rev: 19.3b0
+    hooks:
+      - id: black
+        language_version: python3
+  - repo: https://github.com/pre-commit/pre-commit-hooks.git
+    rev: v2.2.3
+    hooks:
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: mixed-line-ending
+      - id: check-byte-order-marker
+      - id: check-executables-have-shebangs
+      - id: check-merge-conflict
+      - id: debug-statements
+  - repo: https://gitlab.com/pycqa/flake8.git
+    rev: 3.7.8
+    hooks:
+      - id: flake8
+        additional_dependencies:
+          - flake8-black
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: v1.16.0
+    hooks:
+      - id: yamllint
+        files: \.(yaml|yml)$
+        types: [file, yaml]
+        entry: yamllint --strict
+  - repo: https://github.com/codespell-project/codespell.git
+    rev: v1.15.0
+    hooks:
+      - id: codespell
+        name: codespell
+        description: Checks for common misspellings in text files.
+        entry: codespell
+        language: python
+        types: [text]
+        args: []
+        require_serial: false
+        additional_dependencies: []
