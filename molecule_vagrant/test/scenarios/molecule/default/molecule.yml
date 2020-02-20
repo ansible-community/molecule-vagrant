@@ -1,0 +1,13 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: vagrant
+  provider:
+    name: virtualbox
+platforms:
+  - name: instance
+    box: generic/alpine310
+    provision: false
+provisioner:
+  name: ansible
