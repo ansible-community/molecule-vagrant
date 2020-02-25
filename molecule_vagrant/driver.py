@@ -38,7 +38,7 @@ class Vagrant(Driver):
 
     .. important::
 
-        This driver is alpha quality software.  Do not perform any additonal
+        This driver is alpha quality software.  Do not perform any additional
         tasks inside the ``create`` playbook.  Molecule does not know about the
         Vagrant instances' configuration until the ``converge`` playbook is
         executed.
@@ -86,7 +86,7 @@ class Vagrant(Driver):
 
     .. code-block:: bash
 
-        $ pip install molecule[vagrant]
+        $ pip install molecule-vagrant
 
     Change the provider passed to Vagrant.
 
@@ -126,7 +126,7 @@ class Vagrant(Driver):
 
     def __init__(self, config=None):
         super(Vagrant, self).__init__(config)
-        self._name = 'vagrant'
+        self._name = "vagrant"
 
     @property
     def name(self):
@@ -139,20 +139,20 @@ class Vagrant(Driver):
     @property
     def testinfra_options(self):
         return {
-            'connection': 'ansible',
-            'ansible-inventory': self._config.provisioner.inventory_file,
+            "connection": "ansible",
+            "ansible-inventory": self._config.provisioner.inventory_file,
         }
 
     @property
     def login_cmd_template(self):
-        connection_options = ' '.join(self.ssh_connection_options)
+        connection_options = " ".join(self.ssh_connection_options)
 
         return (
-            'ssh {{address}} '
-            '-l {{user}} '
-            '-p {{port}} '
-            '-i {{identity_file}} '
-            '{}'
+            "ssh {{address}} "
+            "-l {{user}} "
+            "-p {{port}} "
+            "-i {{identity_file}} "
+            "{}"
         ).format(connection_options)
 
     @property
@@ -161,9 +161,9 @@ class Vagrant(Driver):
             self.vagrantfile,
             self.vagrantfile_config,
             self.instance_config,
-            os.path.join(self._config.scenario.ephemeral_directory, '.vagrant'),
-            os.path.join(self._config.scenario.ephemeral_directory, 'vagrant-*.out'),
-            os.path.join(self._config.scenario.ephemeral_directory, 'vagrant-*.err'),
+            os.path.join(self._config.scenario.ephemeral_directory, ".vagrant"),
+            os.path.join(self._config.scenario.ephemeral_directory, "vagrant-*.out"),
+            os.path.join(self._config.scenario.ephemeral_directory, "vagrant-*.err"),
         ]
 
     @property
@@ -171,7 +171,7 @@ class Vagrant(Driver):
         return self._get_ssh_connection_options()
 
     def login_options(self, instance_name):
-        d = {'instance': instance_name}
+        d = {"instance": instance_name}
 
         return util.merge_dicts(d, self._get_instance_config(instance_name))
 
@@ -180,12 +180,12 @@ class Vagrant(Driver):
             d = self._get_instance_config(instance_name)
 
             return {
-                'ansible_user': d['user'],
-                'ansible_host': d['address'],
-                'ansible_port': d['port'],
-                'ansible_private_key_file': d['identity_file'],
-                'connection': 'ssh',
-                'ansible_ssh_common_args': ' '.join(self.ssh_connection_options),
+                "ansible_user": d["user"],
+                "ansible_host": d["address"],
+                "ansible_port": d["port"],
+                "ansible_private_key_file": d["identity_file"],
+                "connection": "ssh",
+                "ansible_ssh_common_args": " ".join(self.ssh_connection_options),
             }
         except StopIteration:
             return {}
@@ -196,17 +196,17 @@ class Vagrant(Driver):
 
     @property
     def vagrantfile(self):
-        return os.path.join(self._config.scenario.ephemeral_directory, 'Vagrantfile')
+        return os.path.join(self._config.scenario.ephemeral_directory, "Vagrantfile")
 
     @property
     def vagrantfile_config(self):
-        return os.path.join(self._config.scenario.ephemeral_directory, 'vagrant.yml')
+        return os.path.join(self._config.scenario.ephemeral_directory, "vagrant.yml")
 
     def _get_instance_config(self, instance_name):
         instance_config_dict = util.safe_load_file(self._config.driver.instance_config)
 
         return next(
-            item for item in instance_config_dict if item['instance'] == instance_name
+            item for item in instance_config_dict if item["instance"] == instance_name
         )
 
     def sanity_checks(self):
@@ -217,6 +217,7 @@ class Vagrant(Driver):
         """ Return path to its own cookiecutterm templates. It is used by init
         command in order to figure out where to load the templates from.
         """
-        return os.path.join(
-            os.path.dirname(__file__), "cookiecutter/scenario/driver/vagrant"
-        )
+        return os.path.join(os.path.dirname(__file__), "cookiecutter")
+
+    def modules_dir(self):
+        return os.path.join(os.path.dirname(__file__), "modules")
