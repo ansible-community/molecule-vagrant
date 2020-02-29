@@ -8,18 +8,18 @@
         - molecule-tox-linters:
             vars:
               tox_envlist: lint
-    # - molecule-tox-packaging:
-    #     vars:
-    #       tox_envlist: packaging
-    # - molecule-tox-py27-centos-7:
-    #     # broken vagrant-libvirt install
-    #     voting: false
-    # - molecule-tox-py36-centos-8:
-    #     # broken vagrant-libvirt install
-    #     voting: false
-    # - molecule-tox-py37-fedora-30
-    # - molecule-tox-devel-centos-8:
-    #     # broken vagrant-libvirt install
-    #     voting: false
+        - molecule-tox-packaging:
+            vars:
+              tox_envlist: packaging
+        - molecule-tox-py27-centos-7:
+            # broken vagrant-libvirt install
+            voting: false
+        - molecule-tox-py36-centos-8:
+            # broken vagrant-libvirt install
+            voting: false
+        - molecule-tox-py37-fedora-30
+        - molecule-tox-devel-centos-8:
+            # broken vagrant-libvirt install
+            voting: false
     gate:
       jobs: *defaults
