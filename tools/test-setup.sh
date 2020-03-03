@@ -36,7 +36,15 @@ which vagrant || \
     }
 
 vagrant plugin list | grep vagrant-libvirt || {
-    CONFIGURE_ARGS="with-libvirt-include=/usr/include/libvirt with-libvirt-lib=/usr/lib64" vagrant plugin install vagrant-libvirt
+    export CONFIGURE_ARGS="with-libvirt-include=/usr/include/libvirt with-libvirt-lib=/usr/lib64"
+    if [ -x /opt/vagrant/bin/vagrant ]; then
+        # command line from https://github.com/vagrant-libvirt/vagrant-libvirt#installation
+        export GEM_HOME=~/.vagrant.d/gems
+        export GEM_PATH=$GEM_HOME:/opt/vagrant/embedded/gems
+        export PATH=/opt/vagrant/embedded/bin:$PATH
+        export CONFIGURE_ARGS='with-ldflags=-L/opt/vagrant/embedded/lib with-libvirt-include=/usr/include/libvirt with-libvirt-lib=/usr/lib'
+    fi
+    vagrant plugin install vagrant-libvirt
 }
 
 rpm -qa | grep libselinux
