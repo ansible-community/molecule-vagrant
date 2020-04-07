@@ -17,7 +17,7 @@
         platform_box_version: "{{ item.box_version | default(omit) }}"
         platform_box_url: "{{ item.box_url | default(omit) }}"
 
-        provider_name: "{{ molecule_yml.driver.provider.name }}"
+        provider_name: "{{ molecule_yml.driver.provider.name | default(omit, true) }}"
         provider_memory: "{{ item.memory | default(omit) }}"
         provider_cpus: "{{ item.cpus | default(omit) }}"
         provider_options: "{{ item.provider_options | default(omit) }}"
