@@ -8,7 +8,7 @@
     - name: Destroy molecule instance(s)
       vagrant:
         instance_name: "{{ item.name }}"
-        platform_box: "{{ item.box | default(omit) }}"
+        platform_box: "{{ item.box | default('generic/alpine310') }}"
         provider_name: "{{ molecule_yml.driver.provider.name }}"
         provider_options: "{{ item.provider_options | default(omit) }}"
         provider_raw_config_args: "{{ item.provider_raw_config_args | default(omit) }}"
