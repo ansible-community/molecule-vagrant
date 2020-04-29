@@ -1,0 +1,30 @@
+---
+- hosts: all
+  tasks:
+    - name: Look for /tmp/workdir
+      stat:
+        path: /tmp/workdir
+      register: workdir
+
+    - name: Make sure there's a /vagrant
+      assert:
+        that:
+          - workdir.stat.exists | bool
+
+    - name: Get /tmp/workdir file content
+      command: cat /tmp/workdir
+      changed_when: false
+      register: workdir_content
+
+    - name: print molecule ephemeral directory
+      debug:
+        msg: "{{ lookup('env', 'MOLECULE_EPHEMERAL_DIRECTORY') }}"
+
+    - name: print workdir file content
+      debug:
+        var: workdir_content.stdout
+
+    - name: Check /tmp/workdir content
+      assert:
+        that:
+          - "workdir_content.stdout == lookup('env', 'MOLECULE_EPHEMERAL_DIRECTORY')"
