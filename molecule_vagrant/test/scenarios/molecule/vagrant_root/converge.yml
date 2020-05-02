@@ -1,0 +1,11 @@
+---
+- name: Converge
+  hosts: all
+  gather_facts: false
+  become: true
+  tasks:
+    - name: sample task  # noqa 305
+      shell:
+        cmd: uname
+        warn: false
+      changed_when: false

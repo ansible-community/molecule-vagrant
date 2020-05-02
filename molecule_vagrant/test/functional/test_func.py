@@ -23,10 +23,9 @@ import pytest
 import os
 import sh
 
+from molecule import util
 from molecule import logger
 from molecule.test.conftest import run_command, change_dir_to
-
-# import change_dir_to, temp_dir
 
 LOG = logger.get_logger(__name__)
 
@@ -48,4 +47,17 @@ def test_command_init_scenario(temp_dir):
         assert os.path.isdir(scenario_directory)
 
         cmd = sh.molecule.bake("--debug", "test", "-s", "test-scenario")
+        run_command(cmd)
+
+
+@pytest.mark.parametrize("scenario", [("vagrant_root")])
+def test_vagrant_root(temp_dir, scenario):
+    options = {"scenario_name": scenario}
+
+    scenario_directory = os.path.join(
+        os.path.dirname(util.abs_path(__file__)), os.path.pardir, "scenarios"
+    )
+
+    with change_dir_to(scenario_directory):
+        cmd = sh.molecule.bake("test", **options)
         run_command(cmd)
