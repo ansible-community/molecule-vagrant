@@ -27,7 +27,7 @@ repos:
       - id: black
         language_version: python3
   - repo: https://gitlab.com/pycqa/flake8.git
-    rev: 3.7.9
+    rev: 3.8.0a2
     hooks:
       - id: flake8
         additional_dependencies:
@@ -44,19 +44,15 @@ repos:
         args: []
         require_serial: false
         additional_dependencies: []
-  - repo: https://github.com/PyCQA/flake8.git
-    rev: 3.7.9
-    hooks:
-      - id: flake8
   - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.20.0
+    rev: v1.23.0
     hooks:
       - id: yamllint
         files: \.(yaml|yml)$
         types: [file, yaml]
         entry: yamllint --strict -f parsable
   - repo: https://github.com/openstack-dev/bashate.git
-    rev: 1.0.0
+    rev: 2.0.0
     hooks:
       - id: bashate
         entry: bashate --error . --ignore=E006,E040
@@ -67,13 +63,3 @@ repos:
         # E040: Syntax error determined using `bash -n` (as many scripts
         #       use jinja templating, this will often fail and the syntax
         #       error will be discovered in execution anyway)
-  - repo: https://github.com/ansible/ansible-lint.git
-    rev: v4.2.0
-    hooks:
-      - id: ansible-lint
-        always_run: true
-        pass_filenames: false
-        # do not add file filters here as ansible-lint does not give reliable
-        # results when called with individual files.
-        # https://github.com/ansible/ansible-lint/issues/611
-        entry: env ANSIBLE_LIBRARY=molecule_vagrant/modules ansible-lint --force-color -p -v
