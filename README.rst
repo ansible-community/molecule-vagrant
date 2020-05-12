@@ -53,38 +53,37 @@ Here's a full example with the libvirt provider:
    driver:
      name: vagrant
      provider:
-       # Can be any supported provider (VBox, Parallels, libvirt, etc)
+       # Can be any supported provider, defaults to VirtualBox
        name: libvirt
 
    platforms:
      - name: instance
        # List of dictionaries mapped to `config.vm.network`
-       interfaces:
-         # `network_name` is the required identifier, all other keys map to
-         # arguments.
-         - network_name: forwarded_port
-           guest: 80
-           host: 8080
-       # List of raw Vagrant `config` options
-       instance_raw_config_args:
-         - 'vagrant.plugins = ["vagrant-libvirt"]'
-       # Dictionary of `config` options. Note that string values need to be
-       # explicitly enclosed in quotes.
-       config_options:
-         ssh.keep_alive: yes
-         ssh.remote_user: "'vagrant'"
+       networks:
+         - identifier: forwarded_port
+           options:
+             guest: 80
+             host: 8080
+       # Which box to use, defaults to generic/alpine310
        box: fedora/32-cloud-base
        box_version: 32.20200422.0
        box_url:
        memory: 512
        cpus: 1
+       synced_folder: no
+       # Dictionary of `config` options
+       config_options:
+         ssh.keep_alive: yes
+         ssh.remote_user: vagrant
        # Dictionary of options passed to the provider
        provider_options:
-         video_type: "'vga'"
+         video_type: vga
+       # List of raw Vagrant `config` options
+       instance_raw_config_args:
+         - 'vagrant.plugins = ["vagrant-libvirt"]'
        # List of raw provider options
        provider_raw_config_args:
          - "cpuset = '1-4,^3,6'"
-       provision: no
 
 .. _`fedora/32-cloud-base`: https://app.vagrantup.com/fedora/boxes/32-cloud-base
 
