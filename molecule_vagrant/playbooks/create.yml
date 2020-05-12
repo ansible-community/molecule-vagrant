@@ -25,7 +25,7 @@
         provider_override_args: "{{ item.provider_override_args | default(omit) }}"
 
         provision: "{{ item.provision | default(omit) }}"
-
+        parallel: "{{ molecule_yml.driver.provider.parallel | default(yes) }}"
         state: up
       register: server
       with_items: "{{ molecule_yml.platforms }}"

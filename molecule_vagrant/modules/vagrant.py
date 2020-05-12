@@ -438,6 +438,12 @@ class VagrantClient(object):
             changed = True
             provision = self._module.params["provision"]
             try:
+                if not self._module.params["parallel"]:
+                    vagrant_env = os.environ.copy()
+                    vagrant_env["VAGRANT_NO_PARALLEL"] = "1"
+
+                    self._vagrant.env = vagrant_env
+
                 self._vagrant.up(provision=provision)
             except Exception:
                 # NOTE(retr0h): Ignore the exception since python-vagrant
@@ -605,6 +611,7 @@ def main():
             provider_options=dict(type="dict", default={}),
             provider_override_args=dict(type="list", default=None),
             provider_raw_config_args=dict(type="list", default=None),
+            parallel=dict(type="bool", default=True),
             provision=dict(type="bool", default=False),
             force_stop=dict(type="bool", default=False),
             state=dict(type="str", default="up", choices=["up", "destroy", "halt"]),
