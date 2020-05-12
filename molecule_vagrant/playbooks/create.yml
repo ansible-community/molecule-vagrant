@@ -35,12 +35,9 @@
 
     # NOTE(retr0h): Vagrant/VBox sucks and parallelizing instance creation
     # causes issues.
-
     # Mandatory configuration for Molecule to function.
-
     - when: server.changed | bool
       block:
-
         - name: Populate instance config dict
           set_fact:
             instance_conf_dict: {

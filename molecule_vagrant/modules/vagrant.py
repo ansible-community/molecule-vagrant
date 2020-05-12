@@ -518,13 +518,11 @@ class VagrantClient(object):
         self._write_vagrantfile()
 
     def _get_vagrant(self):
-        v = vagrant.Vagrant(
+        return vagrant.Vagrant(
             out_cm=self.stdout_cm,
             err_cm=self.stderr_cm,
             root=os.environ["MOLECULE_EPHEMERAL_DIRECTORY"],
         )
-
-        return v
 
     def _get_vagrant_config_dict(self):
         d = {
@@ -614,16 +612,16 @@ def main():
         supports_check_mode=False,
     )
 
-    v = VagrantClient(module)
+    vagrant = VagrantClient(module)
 
     if module.params["state"] == "up":
-        v.up()
+        vagrant.up()
 
     if module.params["state"] == "destroy":
-        v.destroy()
+        vagrant.destroy()
 
     if module.params["state"] == "halt":
-        v.halt()
+        vagrant.halt()
 
     module.exit_json(**module.result)
 

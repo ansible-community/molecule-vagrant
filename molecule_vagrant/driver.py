@@ -48,7 +48,7 @@ class Vagrant(Driver):
         inventory on the next execution of `molecule.command.create`, which
         happens to be the ``converge`` playbook.
 
-        This is an area needing improvement.  Gluing togher Ansible playbook
+        This is an area needing improvement.  Gluing together Ansible playbook
         return data and molecule is clunky.  Moving the playbook execution
         from ``sh`` to python is less than ideal, since the playbook's return
         data needs handled by an internal callback plugin.
@@ -214,7 +214,7 @@ class Vagrant(Driver):
         pass
 
     def template_dir(self):
-        """ Return path to its own cookiecutterm templates. It is used by init
+        """ Return path to its own cookiecutter templates. It is used by init
         command in order to figure out where to load the templates from.
         """
         return os.path.join(os.path.dirname(__file__), "cookiecutter")
