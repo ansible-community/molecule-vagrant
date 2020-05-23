@@ -8,6 +8,5 @@ driver:
 platforms:
   - name: instance
     box: generic/alpine310
-    provision: false
 provisioner:
   name: ansible

@@ -51,7 +51,14 @@ def test_command_init_scenario(temp_dir):
 
 
 @pytest.mark.parametrize(
-    "scenario", [("vagrant_root"), ("config_options"), ("provider_config_options")]
+    "scenario",
+    [
+        ("default"),
+        ("vagrant_root"),
+        ("multi-node"),
+        ("config_options"),
+        ("provider_config_options"),
+    ],
 )
 def test_vagrant_root(temp_dir, scenario):
     options = {"scenario_name": scenario}

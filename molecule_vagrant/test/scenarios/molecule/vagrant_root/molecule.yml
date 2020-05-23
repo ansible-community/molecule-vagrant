@@ -10,7 +10,6 @@ lint:
 platforms:
   - name: instance
     box: centos/7
-    provision: true
     instance_raw_config_args:
       - "vm.provision :shell, inline: \"echo #{Dir.pwd} > /tmp/workdir\""
 provisioner:

@@ -8,29 +8,33 @@ driver:
 platforms:
   - name: instance-1
     box: debian/jessie64
-    interfaces:
-      - auto_config: true
-        network_name: private_network
-        type: dhcp
-      - virtualbox__intnet: test_network
-        network_name: private_network
-        ip: 192.168.0.1
+    networks:
+      - identifier: private_network
+        options:
+          auto_config: true
+          type: dhcp
+      - identifier: private_network
+        options:
+          virtualbox__intnet: test_network
+          ip: 192.168.0.1
     groups:
       - foo
       - bar
     memory: 1024
     cpus: 1
-    config_options:
-      synced_folder: true
+    synced_folder: true
+
   - name: instance-2
     box: centos/7
-    interfaces:
-      - auto_config: true
-        network_name: private_network
-        type: dhcp
-      - virtualbox__intnet: test_network
-        network_name: private_network
-        ip: 192.168.0.2
+    networks:
+      - identifier: private_network
+        options:
+          auto_config: true
+          type: dhcp
+      - identifier: private_network
+        options:
+          virtualbox__intnet: test_network
+          ip: 192.168.0.2
     groups:
       - foo
       - baz
