@@ -35,6 +35,14 @@ which vagrant || \
         sudo $PKG_CMD install -y https://releases.hashicorp.com/vagrant/2.2.7/vagrant_2.2.7_x86_64.rpm
     }
 
+# https://bugzilla.redhat.com/show_bug.cgi?id=1839651
+if [ -f /etc/fedora-release ]; then
+    grep -qi '^fedora.*31' /etc/fedora-release
+    if [ $? -eq 0 ]; then
+        sudo $PKG_CMD upgrade -y --enablerepo=updates-testing --advisory=FEDORA-2020-09c472786c
+    fi
+fi
+
 vagrant plugin list | grep vagrant-libvirt || {
     export CONFIGURE_ARGS="with-libvirt-include=/usr/include/libvirt with-libvirt-lib=/usr/lib64"
     if [ -x /opt/vagrant/bin/vagrant ]; then
