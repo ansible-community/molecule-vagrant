@@ -1,0 +1,14 @@
+---
+- hosts: all
+  tasks:
+    - name: Look for /vagrant
+      stat:
+        path: /vagrant
+      register: vagrantdir
+
+    - name: Make sure there's a /vagrant
+      assert:
+        that:
+          - vagrantdir.stat.exists | bool
+          - vagrantdir.stat.isdir is defined
+          - vagrantdir.stat.isdir | bool
