@@ -13,6 +13,7 @@
               tox_envlist: packaging
         - molecule-tox-py36-centos-8
         - molecule-tox-py37-fedora-30
-        - molecule-tox-devel-centos-8
+        - molecule-tox-devel-centos-8:
+            voting: false
     gate:
       jobs: *defaults
