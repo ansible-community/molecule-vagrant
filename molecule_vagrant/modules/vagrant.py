@@ -514,6 +514,9 @@ class VagrantClient(object):
         )
 
     def _write_configs(self):
+        if self._module.params["state"] != "up":
+            return
+
         self._write_vagrantfile_config(self._get_vagrant_config_dict())
         self._write_vagrantfile()
 
@@ -611,6 +614,7 @@ def main():
             force_stop=dict(type="bool", default=False),
             state=dict(type="str", default="up", choices=["up", "destroy", "halt"]),
         ),
+        required_if=[["state", "up", ["platform_box"]]],
         supports_check_mode=False,
     )
 

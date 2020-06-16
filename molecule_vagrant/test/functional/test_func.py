@@ -22,9 +22,11 @@
 import pytest
 import os
 import sh
+import yaml
 
 from molecule import util
 from molecule import logger
+from molecule import scenario
 from molecule.test.conftest import run_command, change_dir_to
 
 LOG = logger.get_logger(__name__)
@@ -63,3 +65,35 @@ def test_vagrant_root(temp_dir, scenario):
     with change_dir_to(scenario_directory):
         cmd = sh.molecule.bake("test", **options)
         run_command(cmd)
+
+
+def test_vagrant_config(temp_dir):
+    options = {"scenario_name": "config_update"}
+
+    scenario_directory = os.path.join(
+        os.path.dirname(util.abs_path(__file__)), os.path.pardir, "scenarios"
+    )
+    vagrant_file_path = os.path.join(
+        scenario.ephemeral_directory(), "scenarios", "config_update", "Vagrantfile"
+    )
+    vagrant_yaml_path = os.path.join(
+        scenario.ephemeral_directory(), "scenarios", "config_update", "vagrant.yml"
+    )
+
+    with change_dir_to(scenario_directory):
+        cmd = sh.molecule.bake("create", **options)
+        run_command(cmd)
+        vagrant_file = os.stat(vagrant_file_path).st_mtime
+        vagrant_yml = os.stat(vagrant_yaml_path).st_mtime
+        cmd = sh.molecule.bake("destroy", **options)
+        run_command(cmd)
+        # with the change making sure that the Vagrantfile/vagrant.yml
+        # files are modified only at VM creation time, the mtime should
+        # not have changed between create and destroy.
+        assert vagrant_file == os.stat(vagrant_file_path).st_mtime
+        assert vagrant_yml == os.stat(vagrant_yaml_path).st_mtime
+
+    # make sure that the box name has been set
+    with open(vagrant_yaml_path) as yml:
+        cfg = yaml.load(yml, Loader=yaml.FullLoader)
+        assert cfg["platform"]["box"] is not None
