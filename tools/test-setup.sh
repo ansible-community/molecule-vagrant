@@ -67,7 +67,7 @@ if [ -f /etc/centos-release ]; then
         sed -i ./krb5.spec -e 's,Patch.*krb5-1.17post6-FIPS-with-PRNG-and-RADIUS-and-MD4.patch,,'
         rpmbuild -bp krb5.spec --nodeps
         cd ../BUILD/krb5-1.17/src
-        # Some flags are missing compared to the spec but theses ones seem to be enough
+        # Some flags are missing compared to the spec but these ones seem to be enough
         export CFLAGS="-I/opt/vagrant/embedded/include/ -fPIC -fno-strict-aliasing -fstack-protector-all"
         export LDFLAGS=-L/opt/vagrant/embedded/lib64/
         ./configure --prefix=/opt/vagrant/embedded/
