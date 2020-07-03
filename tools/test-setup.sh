@@ -57,7 +57,7 @@ if [ -f /etc/centos-release ]; then
         sudo dnf install -y rpm-build autoconf libselinux-devel pam-devel bison byacc
         mkdir -p rpmbuild/SOURCES
         cd rpmbuild/SOURCES
-        dnf download --enablerepo=BaseOS-source --disablerepo=epel-source --disablerepo=epel --source krb5-libs
+        sudo dnf download --enablerepo=BaseOS-source --disablerepo=epel-source --disablerepo=epel --source krb5-libs
         rpm2cpio krb5-1.17-*.src.rpm | cpio -id
         # remove patch making incompatible with the openssl bundled with vagrant
         sed -i ./krb5.spec -e 's,Patch.*Use-backported-version-of-OpenSSL-3-KDF-interface.patch,,'
