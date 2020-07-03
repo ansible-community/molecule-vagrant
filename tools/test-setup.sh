@@ -51,6 +51,8 @@ if [ -f /etc/centos-release ]; then
         relver="$(cat /etc/centos-release | awk '{print $4}')"
         sudo sed -i /etc/yum.repos.d/CentOS-Sources.repo -e 's,$contentdir/,,g'
         sudo sed -i /etc/yum.repos.d/CentOS-Sources.repo -e "s,\$releasever,$relver,g"
+        # Should avoid the "error: [Errno 13] Permission denied: '/var/cache/dnf/expired_repos.json'"
+        sudo dnf makecache
 
         sudo dnf install -y rpm-build autoconf libselinux-devel pam-devel bison byacc
         mkdir -p rpmbuild/SOURCES
