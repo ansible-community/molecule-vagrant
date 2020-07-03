@@ -21,8 +21,6 @@ PKG_CMD=$(command -v dnf yum apt-get|head -n1)
 sudo $PYTHON -m pip install -U tox "zipp<0.6.0;python_version=='2.7'"
 
 # === LIBVIRT SETUP ===
-# https://bugs.launchpad.net/ubuntu/+source/libvirt/+bug/1588004
-sudo rm -f /etc/systemd/libvirtd.service /etc/systemd/system/multi-user.target.wants/libvirt-bin.service || true
 sudo systemctl enable --now libvirtd
 sudo usermod --append --groups libvirt "$(whoami)"
 
@@ -35,45 +33,64 @@ which vagrant || \
         sudo $PKG_CMD install -y https://releases.hashicorp.com/vagrant/2.2.9/vagrant_2.2.9_x86_64.rpm
     }
 
-# https://bugzilla.redhat.com/show_bug.cgi?id=1839651
-if [ -f /etc/fedora-release ]; then
-    grep -qi '^fedora.*31' /etc/fedora-release
-    if [ $? -eq 0 ]; then
-        sudo $PKG_CMD upgrade -y --enablerepo=updates-testing --advisory=FEDORA-2020-09c472786c
-    fi
-fi
+if [ -f /etc/os-release ]; then
+    source /etc/os-release
+    case "$NAME" in
+        Ubuntu)
+            case "$VERSION_ID" in
+                18.04)
+                    # ubuntu xenial vagrant is too old so it doesn't support triggers, used by the alpine box
+                    sudo apt-get remove --purge -y vagrant
+                    wget https://releases.hashicorp.com/vagrant/2.2.9/vagrant_2.2.9_x86_64.deb
+                    sudo dpkg -i vagrant_2.2.9_x86_64.deb
+                    ;;
+                *)
+                    ;;
+            esac
+            ;;
+        Fedora)
+            case "$VERSION_ID" in
+                31)
+                    # https://bugzilla.redhat.com/show_bug.cgi?id=1839651
+                    sudo $PKG_CMD upgrade -y --enablerepo=updates-testing --advisory=FEDORA-2020-09c472786c
+                    ;;
+                *)
+                    ;;
+            esac
+            ;;
+        CentOS*)
+            # https://github.com/hashicorp/vagrant/issues/11020
+            if grep -qi '^CentOS Linux release 8.2.*' /etc/centos-release ; then
+                # https://bugs.centos.org/view.php?id=17120
+                relver="$(cat /etc/centos-release | awk '{print $4}')"
+                sudo sed -i /etc/yum.repos.d/CentOS-Sources.repo -e 's,$contentdir/,,g'
+                sudo sed -i /etc/yum.repos.d/CentOS-Sources.repo -e "s,\$releasever,$relver,g"
 
-# https://github.com/hashicorp/vagrant/issues/11020
-if [ -f /etc/centos-release ]; then
-    grep -qi '^CentOS Linux release 8.2.*' /etc/centos-release
-    if [ $? -eq 0 ]; then
-        # https://bugs.centos.org/view.php?id=17120
-        relver="$(cat /etc/centos-release | awk '{print $4}')"
-        sudo sed -i /etc/yum.repos.d/CentOS-Sources.repo -e 's,$contentdir/,,g'
-        sudo sed -i /etc/yum.repos.d/CentOS-Sources.repo -e "s,\$releasever,$relver,g"
-        # Should avoid the "error: [Errno 13] Permission denied: '/var/cache/dnf/expired_repos.json'"
-        sudo dnf makecache
-
-        sudo dnf install -y rpm-build autoconf libselinux-devel pam-devel bison byacc
-        mkdir -p rpmbuild/SOURCES
-        cd rpmbuild/SOURCES
-        sudo dnf download --enablerepo=BaseOS-source --disablerepo=epel-source --disablerepo=epel --source krb5-libs
-        rpm2cpio krb5-1.17-*.src.rpm | cpio -id
-        # remove patch making incompatible with the openssl bundled with vagrant
-        sed -i ./krb5.spec -e 's,Patch.*Use-backported-version-of-OpenSSL-3-KDF-interface.patch,,'
-        # depends on previous patch
-        sed -i ./krb5.spec -e 's,Patch.*krb5-1.17post2-DES-3DES-fixups.patch,,'
-        # not sure why but makes the build fail
-        sed -i ./krb5.spec -e 's,Patch.*krb5-1.17post6-FIPS-with-PRNG-and-RADIUS-and-MD4.patch,,'
-        rpmbuild -bp krb5.spec --nodeps
-        cd ../BUILD/krb5-1.17/src
-        # Some flags are missing compared to the spec but these ones seem to be enough
-        export CFLAGS="-I/opt/vagrant/embedded/include/ -fPIC -fno-strict-aliasing -fstack-protector-all"
-        export LDFLAGS=-L/opt/vagrant/embedded/lib64/
-        ./configure --prefix=/opt/vagrant/embedded/
-        make
-        sudo cp -a lib/crypto/libk5crypto.so.3* /opt/vagrant/embedded/lib64/
-    fi
+                sudo dnf install -y rpm-build autoconf libselinux-devel pam-devel bison byacc
+                mkdir -p rpmbuild/SOURCES
+                cd rpmbuild/SOURCES
+                # download as root to avoid the "error: [Errno 13] Permission denied: '/var/cache/dnf/expired_repos.json'"
+                sudo dnf download --enablerepo=BaseOS-source --disablerepo=epel-source --disablerepo=epel --source krb5-libs
+                rpm2cpio krb5-1.17-*.src.rpm | cpio -id
+                # remove patch making incompatible with the openssl bundled with vagrant
+                sed -i ./krb5.spec -e 's,Patch.*Use-backported-version-of-OpenSSL-3-KDF-interface.patch,,'
+                # depends on previous patch
+                sed -i ./krb5.spec -e 's,Patch.*krb5-1.17post2-DES-3DES-fixups.patch,,'
+                # not sure why but makes the build fail
+                sed -i ./krb5.spec -e 's,Patch.*krb5-1.17post6-FIPS-with-PRNG-and-RADIUS-and-MD4.patch,,'
+                rpmbuild -bp krb5.spec --nodeps
+                cd ../BUILD/krb5-1.17/src
+                # Some flags are missing compared to the spec but these ones seem to be enough
+                export CFLAGS="-I/opt/vagrant/embedded/include/ -fPIC -fno-strict-aliasing -fstack-protector-all"
+                export LDFLAGS=-L/opt/vagrant/embedded/lib64/
+                ./configure --prefix=/opt/vagrant/embedded/
+                make
+                sudo cp -a lib/crypto/libk5crypto.so.3* /opt/vagrant/embedded/lib64/
+            fi
+            ;;
+        *)
+            ;;
+    esac
 fi
 
 vagrant plugin list | grep vagrant-libvirt || {
