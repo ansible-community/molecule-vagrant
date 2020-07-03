@@ -16,7 +16,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 command -v python3 python
 
 PYTHON=$(command -v python3 python|head -n1)
-PKG_CMD=$(command -v dnf yum|head -n1)
+PKG_CMD=$(command -v dnf yum apt-get|head -n1)
 
 sudo $PYTHON -m pip install -U tox "zipp<0.6.0;python_version=='2.7'"
 
@@ -88,7 +88,12 @@ vagrant plugin list | grep vagrant-libvirt || {
     vagrant plugin install vagrant-libvirt
 }
 
-rpm -qa | grep libselinux
+if [ -f /etc/debian_version ]; then
+    dpkg -l | grep libselinux
+    [ -x /usr/bin/aa-enabled ] && echo "Apparmor: `/usr/bin/aa-enabled`"
+else
+    rpm -qa | grep libselinux
+fi
 
 vagrant version
 vagrant global-status
