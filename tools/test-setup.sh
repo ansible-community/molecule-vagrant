@@ -67,11 +67,11 @@ if [ -f /etc/os-release ]; then
                 sudo sed -i /etc/yum.repos.d/CentOS-Sources.repo -e "s,\$releasever,$relver,g"
 
                 sudo dnf install -y rpm-build autoconf libselinux-devel pam-devel bison byacc
-                mkdir -p rpmbuild/SOURCES
-                cd rpmbuild/SOURCES
+                mkdir -p "$HOME/rpmbuild/SOURCES"
+                cd "$HOME/rpmbuild/SOURCES"
                 # download as root to avoid the "error: [Errno 13] Permission denied: '/var/cache/dnf/expired_repos.json'"
                 sudo dnf download --enablerepo=BaseOS-source --disablerepo=epel-source --disablerepo=epel --source krb5-libs
-                rpm2cpio krb5-1.17-*.src.rpm | cpio -id
+                rpm2cpio krb5-1.17-*.src.rpm | cpio -idv
                 # remove patch making incompatible with the openssl bundled with vagrant
                 sed -i ./krb5.spec -e 's,Patch.*Use-backported-version-of-OpenSSL-3-KDF-interface.patch,,'
                 # depends on previous patch
