@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 #  Copyright (c) 2015-2018 Cisco Systems, Inc.
@@ -21,8 +21,6 @@
 #  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
 
-
-from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
@@ -137,7 +135,7 @@ options:
     choices: ['up', 'halt', 'destroy']
     default: None
 requirements:
-    - python >= 2.6
+    - python >= 3
     - python-vagrant
     - vagrant
 """
@@ -380,7 +378,7 @@ stderr:
 """
 
 
-class VagrantClient(object):
+class VagrantClient:
     def __init__(self, module):
         self._module = module
 
