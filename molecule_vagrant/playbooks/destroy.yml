@@ -8,7 +8,7 @@
     - name: Destroy molecule instance(s)
       vagrant:
         instances: "{{ molecule_yml.platforms }}"
-        provider: "{{ molecule_yml.driver.provider.name | default('virtualbox') }}"
+        provider: "{{ molecule_yml.driver.provider.name | default(omit) }}"
         force_stop: "{{ item.force_stop | default(True) }}"
         state: destroy
       register: server

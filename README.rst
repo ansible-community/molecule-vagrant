@@ -85,6 +85,10 @@ Here's a full example with the libvirt provider:
        provider_raw_config_args:
          - "cpuset = '1-4,^3,6'"
 
+Note: v0.4 is backwards-incompatible with v0.3 and under, if you used those
+versions you will need to update your `molecule.yml` files (and any custom
+`create.yml` files).
+
 .. _`fedora/32-cloud-base`: https://app.vagrantup.com/fedora/boxes/32-cloud-base
 
 .. _get-involved:

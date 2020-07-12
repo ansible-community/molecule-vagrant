@@ -8,8 +8,8 @@
     - name: Create molecule instance(s)
       vagrant:
         instances: "{{ molecule_yml.platforms }}"
-        provider: "{{ molecule_yml.driver.provider.name | default('virtualbox') }}"
-        parallel: "{{ molecule_yml.driver.provider.parallel | default(True) }}"
+        provider: "{{ molecule_yml.driver.provider.name | default(omit) }}"
+        parallel: "{{ molecule_yml.driver.provider.parallel | default(omit) }}"
         state: up
       register: server
       no_log: false
