@@ -6,7 +6,7 @@ driver:
   name: vagrant
   provider:
     name: libvirt
-    parallel: no
+    parallel: false
 
 platforms:
   - name: instance-1
@@ -26,7 +26,7 @@ platforms:
     cpus: 1
     synced_folder: true
     provider_options:
-      qemu_use_session: no
+      qemu_use_session: false
 
   - name: instance-2
     box: centos/7
@@ -44,7 +44,7 @@ platforms:
     memory: 2048
     cpus: 2
     provider_options:
-      qemu_use_session: no
+      qemu_use_session: false
 
 provisioner:
   name: ansible
