@@ -132,7 +132,7 @@ Vagrant.configure('2') do |config|
     {{ 'c.vm.box_url = "{}"'.format(instance.box_url) if instance.box_url }}
 
     c.vm.hostname = "{{ instance.name }}"
-    c.vm.synced_folder ".", "/vagrant", disabled: {{ ruby_format(not instance.synced_folder) }}
+    c.vm.synced_folder ".", "/vagrant", nfs_version: 3, disabled: {{ ruby_format(not instance.synced_folder) }}
 
     # Config options
     {% for key, value in instance.config_options.items() -%}
