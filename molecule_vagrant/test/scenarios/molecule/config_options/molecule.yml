@@ -9,8 +9,7 @@ lint:
   /bin/true
 platforms:
   - name: instance
-    config_options:
-      synced_folder: true
+    synced_folder: true
     box: centos/7
 provisioner:
   name: ansible

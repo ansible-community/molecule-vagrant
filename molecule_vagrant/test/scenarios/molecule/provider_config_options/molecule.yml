@@ -10,7 +10,7 @@ lint:
 platforms:
   - name: instance
     provider_options:
-      nic_model_type: '"rtl8139"'
+      nic_model_type: rtl8139
     box: centos/7
 provisioner:
   name: ansible
