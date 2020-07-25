@@ -207,6 +207,12 @@ class VagrantClient:
         self._datetime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.result = {}
 
+        # Disable parallelism if necessary
+        if not self._module.params["parallel"]:
+            vagrant_env = os.environ.copy()
+            vagrant_env["VAGRANT_NO_PARALLEL"] = "1"
+            self._vagrant.env = vagrant_env
+
     @contextlib.contextmanager
     def stdout_cm(self):
         """ Redirect the stdout to a log file. """
@@ -252,12 +258,6 @@ class VagrantClient:
         if not self._created():
             changed = True
             try:
-                if not self._module.params["parallel"]:
-                    vagrant_env = os.environ.copy()
-                    vagrant_env["VAGRANT_NO_PARALLEL"] = "1"
-
-                    self._vagrant.env = vagrant_env
-
                 self._vagrant.up(provider=self._module.params["provider"])
             except Exception:
                 # NOTE(retr0h): Ignore the exception since python-vagrant

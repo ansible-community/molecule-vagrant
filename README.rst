@@ -55,6 +55,7 @@ Here's a full example with the libvirt provider:
      provider:
        # Can be any supported provider, defaults to VirtualBox
        name: libvirt
+       parallel: yes
 
    platforms:
      - name: instance
