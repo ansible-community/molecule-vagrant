@@ -340,8 +340,6 @@ class VagrantClient:
             root=os.environ["MOLECULE_EPHEMERAL_DIRECTORY"],
         )
 
-        return v
-
     def _get_vagrant_instances(self):
         return [
             {
