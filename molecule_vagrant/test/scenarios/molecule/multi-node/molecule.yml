@@ -24,9 +24,12 @@ platforms:
       - bar
     memory: 1024
     cpus: 1
-    synced_folder: true
     provider_options:
       qemu_use_session: false
+    instance_raw_config_args:
+      # We explicitly use rsync instead of the default NFS to avoid needing root
+      # privileges.
+      - "vm.synced_folder '.', '/vagrant', type: 'rsync'"
 
   - name: instance-2
     box: centos/7
