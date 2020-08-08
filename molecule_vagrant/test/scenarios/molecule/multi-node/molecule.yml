@@ -16,9 +16,6 @@ platforms:
         options:
           auto_config: true
           type: dhcp
-      - identifier: private_network
-        options:
-          ip: 192.168.0.2
     groups:
       - foo
       - bar
@@ -38,9 +35,6 @@ platforms:
         options:
           auto_config: true
           type: dhcp
-      - identifier: private_network
-        options:
-          ip: 192.168.0.3
     groups:
       - foo
       - baz
