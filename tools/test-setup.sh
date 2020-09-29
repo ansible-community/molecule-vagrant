@@ -18,7 +18,7 @@ command -v python3 python
 PYTHON=$(command -v python3 python|head -n1)
 PKG_CMD=$(command -v dnf yum apt-get|head -n1)
 
-sudo $PYTHON -m pip install -U tox "zipp<0.6.0;python_version=='2.7'"
+sudo $PYTHON -m pip install -U tox
 
 # === LIBVIRT SETUP ===
 sudo systemctl enable --now libvirtd
@@ -30,7 +30,7 @@ sudo usermod --append --groups libvirt "$(whoami)"
 
 which vagrant || \
     sudo $PKG_CMD install -y vagrant-libvirt || {
-        sudo $PKG_CMD install -y https://releases.hashicorp.com/vagrant/2.2.9/vagrant_2.2.9_x86_64.rpm
+        sudo $PKG_CMD install -y https://releases.hashicorp.com/vagrant/2.2.10/vagrant_2.2.10_x86_64.rpm
     }
 
 if [ -f /etc/os-release ]; then
@@ -41,7 +41,7 @@ if [ -f /etc/os-release ]; then
                 18.04)
                     # ubuntu xenial vagrant is too old so it doesn't support triggers, used by the alpine box
                     sudo apt-get remove --purge -y vagrant
-                    wget https://releases.hashicorp.com/vagrant/2.2.9/vagrant_2.2.9_x86_64.deb
+                    wget --no-show-progress https://releases.hashicorp.com/vagrant/2.2.9/vagrant_2.2.9_x86_64.deb
                     sudo dpkg -i vagrant_2.2.9_x86_64.deb
                     ;;
                 *)
@@ -125,5 +125,5 @@ vagrant plugin list | tee >(grep -q "No plugins installed." && {
 cd $DIR
 
 # sudo su: dirty hack to make sure that usermod change has been taken into account
-sudo su -l "$(whoami)" -c "cd $(pwd) && vagrant up --no-provision"
+sudo su -l "$(whoami)" -c "cd $(pwd) && vagrant up --no-tty --no-provision"
 sudo su -l "$(whoami)" -c "cd $(pwd) && vagrant destroy -f"
