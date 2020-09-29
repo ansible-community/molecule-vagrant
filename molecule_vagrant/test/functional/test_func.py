@@ -45,6 +45,13 @@ def test_command_init_scenario(temp_dir):
         run_command(cmd)
 
         assert os.path.isdir(scenario_directory)
+        if not os.path.exists("/dev/kvm"):
+            confpath = os.path.join(scenario_directory, "molecule.yml")
+            conf = util.safe_load_file(confpath)
+            conf["driver"]["provider"] = {"name": "libvirt"}
+            for p in conf["platforms"]:
+                p["provider_options"] = {"driver": '"qemu"'}
+            util.write_file(confpath, util.safe_dump(conf))
 
         cmd = sh.molecule.bake("--debug", "test", "-s", "test-scenario")
         run_command(cmd)
@@ -55,6 +62,10 @@ def test_command_init_scenario(temp_dir):
 )
 def test_vagrant_root(temp_dir, scenario):
     options = {"scenario_name": scenario}
+
+    env = os.environ
+    if not os.path.exists("/dev/kvm"):
+        env.update({"VIRT_DRIVER": "'qemu'"})
 
     scenario_directory = os.path.join(
         os.path.dirname(util.abs_path(__file__)), os.path.pardir, "scenarios"
