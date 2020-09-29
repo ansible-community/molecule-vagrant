@@ -11,6 +11,8 @@ platforms:
   - name: instance
     config_options:
       synced_folder: true
+    provider_options:
+      driver: "${VIRT_DRIVER:-'kvm'}"
     box: centos/7
 provisioner:
   name: ansible
