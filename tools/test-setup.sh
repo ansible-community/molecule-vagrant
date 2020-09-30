@@ -128,5 +128,5 @@ vagrant plugin list | tee >(grep -q "No plugins installed." && {
 cd $DIR
 
 # sudo su: dirty hack to make sure that usermod change has been taken into account
-sudo su -l "$(whoami)" -c "cd $(pwd) && vagrant up --no-tty --no-provision"
+sudo su -l "$(whoami)" -c "cd $(pwd) && timeout 300 vagrant up --no-tty --no-provision"
 sudo su -l "$(whoami)" -c "cd $(pwd) && vagrant destroy -f"
