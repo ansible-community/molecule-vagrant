@@ -24,6 +24,9 @@ sudo $PYTHON -m pip install -U tox
 sudo systemctl enable --now libvirtd
 sudo usermod --append --groups libvirt "$(whoami)"
 
+# only info about the virtualisation is wanted, so no error please.
+sudo virt-host-validate qemu || true
+
 # === VAGRANT SETUP ===
 # Install Vagrant using their questionable practices, see locked ticket:
 # https://github.com/hashicorp/vagrant/issues/11070
