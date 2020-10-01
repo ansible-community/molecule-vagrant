@@ -5,8 +5,6 @@ driver:
   name: vagrant
   provider:
     name: libvirt
-lint:
-  /bin/true
 platforms:
   - name: instance
     box: centos/7
