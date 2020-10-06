@@ -11,7 +11,7 @@ platforms:
       synced_folder: true
     provider_options:
       driver: "${VIRT_DRIVER:-'kvm'}"
-    box: centos/7
+    box: ${TESTBOX:-centos/7}
     instance_raw_config_args:
       - 'vm.synced_folder ".", "/vagrant", type: "rsync"'
 provisioner:

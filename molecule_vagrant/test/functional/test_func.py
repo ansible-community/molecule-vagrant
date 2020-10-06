@@ -53,13 +53,16 @@ def test_command_init_scenario(temp_dir):
         assert result.returncode == 0
 
         assert os.path.isdir(scenario_directory)
+        confpath = os.path.join(scenario_directory, "molecule.yml")
+        conf = util.safe_load_file(confpath)
+        env = os.environ
+        if "TESTBOX" in env:
+            conf["platforms"][0]["box"] = env["TESTBOX"]
         if not os.path.exists("/dev/kvm"):
-            confpath = os.path.join(scenario_directory, "molecule.yml")
-            conf = util.safe_load_file(confpath)
             conf["driver"]["provider"] = {"name": "libvirt"}
             for p in conf["platforms"]:
                 p["provider_options"] = {"driver": '"qemu"'}
-            util.write_file(confpath, util.safe_dump(conf))
+        util.write_file(confpath, util.safe_dump(conf))
 
         cmd = ["molecule", "--debug", "test", "-s", "test-scenario"]
         result = run_command(cmd)

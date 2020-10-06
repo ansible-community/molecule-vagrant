@@ -7,7 +7,7 @@ driver:
     name: virtualbox
 platforms:
   - name: instance-1
-    box: debian/jessie64
+    box: ${TESTBOX:-debian/jessie64}
     interfaces:
       - auto_config: true
         network_name: private_network
@@ -25,7 +25,7 @@ platforms:
     instance_raw_config_args:
       - 'vm.synced_folder ".", "/vagrant", type: "rsync"'
   - name: instance-2
-    box: centos/7
+    box: ${TESTBOX:-centos/7}
     interfaces:
       - auto_config: true
         network_name: private_network
