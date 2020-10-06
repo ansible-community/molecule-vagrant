@@ -22,6 +22,8 @@ platforms:
     cpus: 1
     config_options:
       synced_folder: true
+    instance_raw_config_args:
+      - 'vm.synced_folder ".", "/vagrant", type: "rsync"'
   - name: instance-2
     box: centos/7
     interfaces:
@@ -36,6 +38,8 @@ platforms:
       - baz
     memory: 2048
     cpus: 2
+    instance_raw_config_args:
+      - 'vm.synced_folder ".", "/vagrant", type: "rsync"'
 provisioner:
   name: ansible
   config_options:
