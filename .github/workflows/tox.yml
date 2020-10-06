@@ -67,6 +67,8 @@ jobs:
         run: |
           echo "${{ matrix.PREFIX }} tox -e ${{ matrix.tox_env }}"
           ${{ matrix.PREFIX }} tox -e ${{ matrix.tox_env }}
+        env:
+          TESTBOX: "generic/alpine310"
 
   publish:
     name: Publish to PyPI registry
