@@ -7,4 +7,6 @@ Vagrant.configure("2") do |config|
     l.cpu_mode = 'custom'
     l.cpu_model = 'qemu64'
   end
+  config.vm.provision :shell, inline: "sudo apk add --no-progress --update python3 rsync"
+  config.ssh.insert_key = false
 end
