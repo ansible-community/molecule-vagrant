@@ -7,7 +7,7 @@ driver:
     name: virtualbox
 platforms:
   - name: instance-1
-    box: debian/jessie64
+    box: ${TESTBOX:-debian/jessie64}
     interfaces:
       - auto_config: true
         network_name: private_network
@@ -23,7 +23,7 @@ platforms:
     config_options:
       synced_folder: true
   - name: instance-2
-    box: centos/7
+    box: ${TESTBOX:-centos/7}
     interfaces:
       - auto_config: true
         network_name: private_network

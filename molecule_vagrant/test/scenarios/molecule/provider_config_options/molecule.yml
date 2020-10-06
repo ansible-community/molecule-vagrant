@@ -12,7 +12,7 @@ platforms:
     provider_options:
       nic_model_type: '"rtl8139"'
       driver: "${VIRT_DRIVER:-'kvm'}"
-    box: centos/7
+    box: ${TESTBOX:-centos/7}
 provisioner:
   name: ansible
 verifier:

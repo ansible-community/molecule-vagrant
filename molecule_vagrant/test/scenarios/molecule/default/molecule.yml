@@ -7,7 +7,7 @@ driver:
     name: virtualbox
 platforms:
   - name: instance
-    box: generic/alpine310
+    box: ${TESTBOX:-generic/alpine310}
     provision: false
 provisioner:
   name: ansible
