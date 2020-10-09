@@ -24,6 +24,9 @@ sudo $PYTHON -m pip install -U tox
 sudo systemctl enable --now libvirtd
 sudo usermod --append --groups libvirt "$(whoami)"
 
+# only info about the virtualisation is wanted, so no error please.
+sudo virt-host-validate qemu || true
+
 # === VAGRANT SETUP ===
 # Install Vagrant using their questionable practices, see locked ticket:
 # https://github.com/hashicorp/vagrant/issues/11070
@@ -125,5 +128,5 @@ vagrant plugin list | tee >(grep -q "No plugins installed." && {
 cd $DIR
 
 # sudo su: dirty hack to make sure that usermod change has been taken into account
-sudo su -l "$(whoami)" -c "cd $(pwd) && vagrant up --no-tty --no-provision"
+sudo su -l "$(whoami)" -c "cd $(pwd) && timeout 300 vagrant up --no-tty --no-provision"
 sudo su -l "$(whoami)" -c "cd $(pwd) && vagrant destroy -f"
