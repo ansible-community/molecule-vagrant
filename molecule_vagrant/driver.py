@@ -19,6 +19,7 @@
 #  DEALINGS IN THE SOFTWARE.
 
 import os
+from shutil import which
 
 from molecule import logger
 from molecule import util
@@ -210,8 +211,15 @@ class Vagrant(Driver):
         )
 
     def sanity_checks(self):
-        # FIXME(decentral1se): Implement sanity checks
-        pass
+        if not which("vagrant"):
+            util.sysexit_with_message("vagrant executable was not found!")
+        try:
+            import vagrant  # noqa
+        except ImportError:
+            util.sysexit_with_message(
+                "Unable to import python vagrant module. Running "
+                "'pip instgt .all python-vagrant' should fix it."
+            )
 
     def template_dir(self):
         """Return path to its own cookiecutterm templates. It is used by init
