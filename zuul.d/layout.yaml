@@ -22,8 +22,6 @@
     vars:
       tox_envlist: py36
     timeout: 3600
-    # https://github.com/ansible-community/molecule-vagrant/issues/47
-    voting: false
 
 - job:
     name: molecule-vagrant-devel-centos
