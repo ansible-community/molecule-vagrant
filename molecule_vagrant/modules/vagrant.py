@@ -35,7 +35,6 @@ import subprocess
 import sys
 
 import molecule
-import molecule.config
 import molecule.util
 
 try:
@@ -136,6 +135,11 @@ options:
     required: True
     choices: ['up', 'halt', 'destroy']
     default: None
+  workdir:
+    description:
+      - vagrant working directory
+    required: False
+    default: content of MOLECULE_EPHEMERAL_DIRECTORY environment variable
 requirements:
     - python >= 2.6
     - python-vagrant
@@ -385,7 +389,7 @@ class VagrantClient(object):
         self._module = module
 
         self._config = self._get_config()
-        self._vagrantfile = self._config.driver.vagrantfile
+        self._vagrantfile = self._config["vagrantfile"]
         self._vagrant = self._get_vagrant()
         self._write_configs()
         self._has_error = None
@@ -497,20 +501,23 @@ class VagrantClient(object):
         return {}
 
     def _get_config(self):
-        molecule_file = os.environ["MOLECULE_FILE"]
-
-        return molecule.config.Config(molecule_file)
+        conf = dict()
+        conf["workdir"] = os.getenv("MOLECULE_EPHEMERAL_DIRECTORY")
+        if self._module.params["workdir"] is not None:
+            conf["workdir"] = self._module.params["workdir"]
+        conf["vagrantfile"] = os.path.join(conf["workdir"], "Vagrantfile")
+        conf["vagrantfile_config"] = os.path.join(conf["workdir"], "vagrant.yml")
+        return conf
 
     def _write_vagrantfile(self):
         template = molecule.util.render_template(
-            VAGRANTFILE_TEMPLATE,
-            vagrantfile_config=self._config.driver.vagrantfile_config,
+            VAGRANTFILE_TEMPLATE, vagrantfile_config=self._config["vagrantfile_config"]
         )
         molecule.util.write_file(self._vagrantfile, template)
 
     def _write_vagrantfile_config(self, data):
         molecule.util.write_file(
-            self._config.driver.vagrantfile_config, molecule.util.safe_dump(data)
+            self._config["vagrantfile_config"], molecule.util.safe_dump(data)
         )
 
     def _write_configs(self):
@@ -521,7 +528,7 @@ class VagrantClient(object):
         v = vagrant.Vagrant(
             out_cm=self.stdout_cm,
             err_cm=self.stderr_cm,
-            root=os.environ["MOLECULE_EPHEMERAL_DIRECTORY"],
+            root=self._config["workdir"],
         )
 
         return v
@@ -586,8 +593,7 @@ class VagrantClient(object):
         instance_name = self._module.params["instance_name"]
 
         return os.path.join(
-            self._config.scenario.ephemeral_directory,
-            "vagrant-{}.{}".format(instance_name, __type),
+            self._config["workdir"], "vagrant-{}.{}".format(instance_name, __type)
         )
 
 
@@ -610,6 +616,7 @@ def main():
             provision=dict(type="bool", default=False),
             force_stop=dict(type="bool", default=False),
             state=dict(type="str", default="up", choices=["up", "destroy", "halt"]),
+            workdir=dict(type="str"),
         ),
         supports_check_mode=False,
     )
