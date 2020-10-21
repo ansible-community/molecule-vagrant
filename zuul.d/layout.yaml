@@ -6,19 +6,17 @@
     description: Run py38 tox environment
     parent: ansible-tox-py38
     nodeset: fedora-latest-1vcpu
-    attempts: 1
+    attempts: 2
     vars:
       tox_envlist: py38
     timeout: 3600
-    # https://github.com/ansible-community/molecule-vagrant/issues/47
-    voting: false
 
 - job:
     name: molecule-vagrant-centos
     description: Run py36 tox environment
     parent: ansible-tox-py36
     nodeset: centos-8-1vcpu
-    attempts: 1
+    attempts: 2
     vars:
       tox_envlist: py36
     timeout: 3600
@@ -28,12 +26,10 @@
     description: Run devel tox environment
     parent: ansible-tox-py36
     nodeset: centos-8-1vcpu
-    attempts: 1
+    attempts: 2
     vars:
       tox_envlist: devel
     timeout: 3600
-    # https://github.com/ansible-community/molecule-vagrant/issues/47
-    voting: false
 
 - project:
     check:
