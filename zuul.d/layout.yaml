@@ -13,25 +13,25 @@
 
 # CentOS is unsupported due to:
 # https://github.com/vagrant-libvirt/vagrant-libvirt/issues/1127
-# - job:
-#     name: molecule-vagrant-centos
-#     description: Run py36 tox environment
-#     parent: ansible-tox-py36
-#     nodeset: centos-8-1vcpu
-#     attempts: 2
-#     vars:
-#       tox_envlist: py36
-#     timeout: 3600
+- job:
+    name: molecule-vagrant-centos
+    description: Run py36 tox environment
+    parent: ansible-tox-py36
+    nodeset: centos-8-1vcpu-without-nested
+    attempts: 2
+    vars:
+      tox_envlist: py36
+    timeout: 3600
 
-# - job:
-#     name: molecule-vagrant-devel-centos
-#     description: Run devel tox environment
-#     parent: ansible-tox-py36
-#     nodeset: centos-8-1vcpu
-#     attempts: 2
-#     vars:
-#       tox_envlist: devel
-#     timeout: 3600
+- job:
+    name: molecule-vagrant-devel-centos
+    description: Run devel tox environment
+    parent: ansible-tox-py36
+    nodeset: centos-8-1vcpu-without-nested
+    attempts: 2
+    vars:
+      tox_envlist: devel
+    timeout: 3600
 
 - project:
     check:
