@@ -36,8 +36,6 @@
     voting: false
 
 - project:
-    templates:
-      - publish-to-pypi
     check:
       jobs: &defaults
         - molecule-tox-linters:
