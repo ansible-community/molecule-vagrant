@@ -28,6 +28,24 @@ Molecule Vagrant Plugin
 Molecule Vagrant is designed to allow use of Vagrant for provisioning of test
 resources.
 
+Supported Platforms
+===================
+
+This driver relies on vagrant command line which is known to be problematic
+to install on several platforms. We do our best to perform CI/CD testing on
+multiple platforms but some are disabled due to known bugs.
+
+* ✅ MacOS with VirtualBox - GitHub Actions
+* ✅ Fedora 32 with libvirt - Zuul
+* ❌ CentOS 8 with libvirt - Zuul DISABLED due to 1127_ and 11020_
+
+Please **do not file bugs for unsupported platforms**. You are welcomed to
+create PRs that fix untested platform, as long they do not break existing ones.
+
+.. _`1127`: https://github.com/vagrant-libvirt/vagrant-libvirt/issues/1127
+.. _`11020`: https://github.com/hashicorp/vagrant/issues/11020
+
+
 Documentation
 =============
 
