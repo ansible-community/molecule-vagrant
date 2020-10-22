@@ -9,4 +9,4 @@
   - name: Check network card pci infos
     assert:
       that:
-        - "ansible_facts[iface].module == '8139cp'"
+        - "ansible_facts[iface].module == 'e1000'"
