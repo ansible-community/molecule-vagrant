@@ -9,5 +9,7 @@ platforms:
   - name: instance
     box: generic/alpine310
     provision: false
+    options:
+      linked_clone: false
 provisioner:
   name: ansible
