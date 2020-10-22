@@ -23,26 +23,11 @@ jobs:
       matrix:
         include:
           - tox_env: lint
-          # - tox_env: docs
-          # - tox_env: py36
-          #   PREFIX: PYTEST_REQPASS=433
-          # - tox_env: py37
-          #   PREFIX: PYTEST_REQPASS=433
-          - tox_env: py38
-            PREFIX: PYTEST_REQPASS=433
-          # - tox_env: py39
-          #   PREFIX: PYTEST_REQPASS=433
-          # - tox_env: packaging
-          # - tox_env: dockerfile
-          # - tox_env: build-containers
-          #   needs:
-          #     - dockerfile
-          #     - docs
-          #     - lint
-          #     - packaging
-          #     - py36
-          #     - py37
-          #     - py38
+          - tox_env: py36
+            PREFIX: PYTEST_REQPASS=5
+          - tox_env: py39
+            PREFIX: PYTEST_REQPASS=5
+          - tox_env: packaging
 
     steps:
       - name: Check vagrant presence
