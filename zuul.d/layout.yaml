@@ -33,6 +33,16 @@
 #       tox_envlist: devel
 #     timeout: 3600
 
+- job:
+    name: molecule-vagrant-ubuntu-bionic
+    description: Run py36 tox environment
+    parent: ansible-tox-py36
+    nodeset: ubuntu-bionic-1vcpu
+    attempts: 2
+    vars:
+      tox_envlist: py36
+    timeout: 3600
+
 - project:
     check:
       jobs: &defaults
@@ -43,5 +53,6 @@
         # - molecule-vagrant-centos
         - molecule-vagrant-fedora
         # - molecule-vagrant-devel-centos
+        - molecule-vagrant-ubuntu-bionic
     gate:
       jobs: *defaults

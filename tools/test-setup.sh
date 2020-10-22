@@ -24,6 +24,11 @@ sudo $PYTHON -m pip install -U tox
 sudo systemctl enable --now libvirtd
 sudo usermod --append --groups libvirt "$(whoami)"
 
+# trick to refresh user groups during current session
+# https://superuser.com/questions/272061/reload-a-linux-users-group-assignments-without-logging-out
+newgrp libvirt
+groups
+
 # only info about the virtualisation is wanted, so no error please.
 sudo virt-host-validate qemu || true
 
