@@ -21,7 +21,6 @@
 
 import pytest
 import os
-import sh
 
 from molecule import util
 from molecule import logger
@@ -33,15 +32,22 @@ LOG = logger.get_logger(__name__)
 # @pytest.mark.xfail(reason="need to fix template path")
 def test_command_init_scenario(temp_dir):
     role_directory = os.path.join(temp_dir.strpath, "test-init")
-    options = {}
-    cmd = sh.molecule.bake("init", "role", "test-init", **options)
+    cmd = ["molecule", "init", "role", "test-init"]
     run_command(cmd)
 
     with change_dir_to(role_directory):
         molecule_directory = pytest.helpers.molecule_directory()
         scenario_directory = os.path.join(molecule_directory, "test-scenario")
-        options = {"role_name": "test-init", "driver-name": "vagrant"}
-        cmd = sh.molecule.bake("init", "scenario", "test-scenario", **options)
+        cmd = [
+            "molecule",
+            "init",
+            "scenario",
+            "test-scenario",
+            "--role-name",
+            "test-init",
+            "--driver-name",
+            "vagrant",
+        ]
         run_command(cmd)
 
         assert os.path.isdir(scenario_directory)
@@ -53,7 +59,7 @@ def test_command_init_scenario(temp_dir):
                 p["provider_options"] = {"driver": '"qemu"'}
             util.write_file(confpath, util.safe_dump(conf))
 
-        cmd = sh.molecule.bake("--debug", "test", "-s", "test-scenario")
+        cmd = ["molecule", "--debug", "test", "-s", "test-scenario"]
         run_command(cmd)
 
 
@@ -61,7 +67,6 @@ def test_command_init_scenario(temp_dir):
     "scenario", [("vagrant_root"), ("config_options"), ("provider_config_options")]
 )
 def test_vagrant_root(temp_dir, scenario):
-    options = {"scenario_name": scenario}
 
     env = os.environ
     if not os.path.exists("/dev/kvm"):
@@ -72,5 +77,5 @@ def test_vagrant_root(temp_dir, scenario):
     )
 
     with change_dir_to(scenario_directory):
-        cmd = sh.molecule.bake("test", **options)
+        cmd = ["molecule", "test", "--scenario-name", scenario]
         run_command(cmd)
