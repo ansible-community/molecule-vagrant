@@ -1,0 +1,90 @@
+#!/usr/bin/env ansible-playbook
+# Expected to work on: CentOS-8, Fedora-33, Ubuntu-x, MacOSX
+- hosts: localhost
+  handlers:
+    - name: reset-connection
+      when: result is changed
+      meta: reset_connection
+  tasks:
+
+    - when: ansible_distribution != 'MacOSX'
+      block:
+
+        - name: enable libvirtd
+          become: true
+          service:
+            name: libvirtd
+            enabled: true
+            state: started
+
+        - name: Add current user to libvirt group
+          become: true
+          user:
+            name: "{{ lookup('env', 'USER') }}"
+            groups: libvirt
+          register: result
+
+        - name: Trigger connection-reset if needed
+          when: result is changed
+          debug:
+            msg: Performing connection reset
+          notify: reset-connection
+
+        - name: Add libvirt plugin from system
+          when: ansible_distribution == 'Fedora'
+          set_fact:
+            vagrant_packages: "{{ vagrant_packages + ['vagrant-libvirt'] }}"
+
+        - name: Install vagrant from system packages
+          become: true
+          package:
+            name:
+              - vagrant
+              - libxslt-devel
+              - libxml2-devel
+              - libvirt-devel
+              - libguestfs-tools-c
+              - ruby-devel
+              - gcc
+            state: present
+
+        - name: Install vagrant-libvirt plugin
+          when: ansible_distribution != 'Fedora'
+          shell: |
+            export CONFIGURE_ARGS="with-libvirt-include=/usr/include/libvirt with-libvirt-lib=/usr/lib64"
+            vagrant plugin install vagrant-libvirt
+
+    - when: ansible_distribution == 'MacOSX'
+      block:
+        - name: Install vagrant from system packages (MacOS)
+          homebrew_cask:
+            name: vagrant
+            state: installed
+
+        - name: Validate vagrant command
+          shell: |
+            vagrant plugin list
+          register: vagrant_plugins
+          changed_when: false
+
+        - name: Install vagrant virtualbox plugin (MacOS)
+          when: '"No plugins installed." in vagrant_plugins.stdout'
+          shell: |
+            vagrant plugin install virtualbox
+          changed_when: '"Installed the plugin" in result.stdout'
+
+    - name: Validate vagrant command
+      shell: |
+        {% if  ansible_distribution == 'MacOSX' %}
+        export PATH=$PATH:/usr/local/bin
+        {% endif %}
+        vagrant --version
+        vagrant global-status
+        vagrant plugin list
+      register: result
+      changed_when: false
+      failed_when: result.rc != 0 or "No plugins installed." in result.stdout
+
+    - name: Display vagrant information
+      debug:
+        msg: "{{ result.stdout }}"
