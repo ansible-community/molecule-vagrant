@@ -33,7 +33,8 @@ LOG = logger.get_logger(__name__)
 def test_command_init_scenario(temp_dir):
     role_directory = os.path.join(temp_dir.strpath, "test-init")
     cmd = ["molecule", "init", "role", "test-init"]
-    run_command(cmd)
+    result = run_command(cmd)
+    assert result.returncode == 0
 
     with change_dir_to(role_directory):
         molecule_directory = pytest.helpers.molecule_directory()
@@ -48,7 +49,8 @@ def test_command_init_scenario(temp_dir):
             "--driver-name",
             "vagrant",
         ]
-        run_command(cmd)
+        result = run_command(cmd)
+        assert result.returncode == 0
 
         assert os.path.isdir(scenario_directory)
         if not os.path.exists("/dev/kvm"):
@@ -60,7 +62,8 @@ def test_command_init_scenario(temp_dir):
             util.write_file(confpath, util.safe_dump(conf))
 
         cmd = ["molecule", "--debug", "test", "-s", "test-scenario"]
-        run_command(cmd)
+        result = run_command(cmd)
+        assert result.returncode == 0
 
 
 @pytest.mark.parametrize(
@@ -78,4 +81,5 @@ def test_vagrant_root(temp_dir, scenario):
 
     with change_dir_to(scenario_directory):
         cmd = ["molecule", "test", "--scenario-name", scenario]
-        run_command(cmd)
+        result = run_command(cmd)
+        assert result.returncode == 0
