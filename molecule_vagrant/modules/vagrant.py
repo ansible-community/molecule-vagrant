@@ -632,7 +632,7 @@ def main():
     if module.params["state"] == "halt":
         v.halt()
 
-    module.exit_json(**module.result)
+    module.fail_json(msg="Unknown error", **v.result)
 
 
 if __name__ == "__main__":
