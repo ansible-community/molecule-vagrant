@@ -4,7 +4,7 @@ default_language_version:
 minimum_pre_commit_version: "1.14.0"
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.2.0
+    rev: v3.3.0
     hooks:
       - id: end-of-file-fixer
       - id: trailing-whitespace
@@ -27,7 +27,7 @@ repos:
       - id: black
         language_version: python3
   - repo: https://gitlab.com/pycqa/flake8.git
-    rev: 3.8.3
+    rev: 3.8.4
     hooks:
       - id: flake8
         additional_dependencies:

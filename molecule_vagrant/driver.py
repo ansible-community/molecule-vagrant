@@ -213,13 +213,16 @@ class Vagrant(Driver):
     def sanity_checks(self):
         if not which("vagrant"):
             util.sysexit_with_message("vagrant executable was not found!")
-        try:
-            import vagrant  # noqa
-        except ImportError:
-            util.sysexit_with_message(
-                "Unable to import python vagrant module. Running "
-                "'pip instgt .all python-vagrant' should fix it."
-            )
+
+        # TODO(ssbarnea): Replace code below with variant that check if ansible
+        # has vagrant module available.
+        # try:
+        #     import vagrant  # noqa
+        # except ImportError:
+        #     util.sysexit_with_message(
+        #         "Unable to import python vagrant module. Running "
+        #         "'pip instgt .all python-vagrant' should fix it."
+        #     )
 
     def template_dir(self):
         """Return path to its own cookiecutterm templates. It is used by init
