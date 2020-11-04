@@ -448,17 +448,17 @@ class VagrantClient(object):
                 # passes the actual error as a no-argument ContextManager.
                 pass
 
-            # NOTE(retr0h): Ansible wants only one module return `fail_json`
-            # or `exit_json`.
-            if not self._has_error:
-                self._module.exit_json(
-                    changed=changed, log=self._get_stdout_log(), **self._conf()
-                )
-            else:
-                msg = "ERROR: See log file '{}'".format(self._get_stderr_log())
-                with io.open(self._get_stderr_log(), "r", encoding="utf-8") as f:
-                    self.result["stderr"] = f.read()
-                self._module.fail_json(msg=msg, **self.result)
+        # NOTE(retr0h): Ansible wants only one module return `fail_json`
+        # or `exit_json`.
+        if not self._has_error:
+            self._module.exit_json(
+                changed=changed, log=self._get_stdout_log(), **self._conf()
+            )
+
+        msg = "Failed to start the VM: See log file '{}'".format(self._get_stderr_log())
+        with io.open(self._get_stderr_log(), "r", encoding="utf-8") as f:
+            self.result["stderr"] = f.read()
+        self._module.fail_json(msg=msg, **self.result)
 
     def destroy(self):
         changed = False
@@ -481,7 +481,15 @@ class VagrantClient(object):
     def _conf(self):
         instance_name = self._module.params["instance_name"]
 
-        return self._vagrant.conf(vm_name=instance_name)
+        try:
+            return self._vagrant.conf(vm_name=instance_name)
+        except Exception:
+            msg = "Failed to get vagrant config for {}: See log file '{}'".format(
+                instance_name, self._get_stderr_log()
+            )
+            with io.open(self._get_stderr_log(), "r", encoding="utf-8") as f:
+                self.result["stderr"] = f.read()
+                self._module.fail_json(msg=msg, **self.result)
 
     def _status(self):
         instance_name = self._module.params["instance_name"]
@@ -489,10 +497,13 @@ class VagrantClient(object):
             s = self._vagrant.status(vm_name=instance_name)[0]
 
             return {"name": s.name, "state": s.state, "provider": s.provider}
-        except AttributeError:
-            pass
-        except subprocess.CalledProcessError:
-            pass
+        except Exception:
+            msg = "Failed to get status for {}: See log file '{}'".format(
+                instance_name, self._get_stderr_log()
+            )
+            with io.open(self._get_stderr_log(), "r", encoding="utf-8") as f:
+                self.result["stderr"] = f.read()
+                self._module.fail_json(msg=msg, **self.result)
 
     def _created(self):
         status = self._status()
@@ -632,7 +643,7 @@ def main():
     if module.params["state"] == "halt":
         v.halt()
 
-    module.exit_json(**module.result)
+    module.fail_json(msg="Unknown error", **v.result)
 
 
 if __name__ == "__main__":
