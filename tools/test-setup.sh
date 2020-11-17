@@ -22,12 +22,20 @@ sudo $PYTHON -m pip install -U tox
 
 # === LIBVIRT SETUP ===
 sudo systemctl enable --now libvirtd
+sudo sed \
+    -e 's!^[# ]*unix_sock_rw_perms = .*$!unix_sock_rw_perms = "0777"!g' \
+    -e 's!^[# ]*auth_unix_rw = .*$!auth_unix_rw = "polkit"!g' -i /etc/libvirt/libvirtd.conf
+# on fedora, looks like virbr0 iface stays there after a restart of libvirt but the network is not
+# started back, leading to network failure when the script tries to start the network
+if sudo virsh net-list --name | grep -qw default;  then
+    sudo virsh net-destroy default
+fi
+sudo systemctl restart libvirtd
 sudo usermod --append --groups libvirt "$(whoami)"
-
-# trick to refresh user groups during current session
-# https://superuser.com/questions/272061/reload-a-linux-users-group-assignments-without-logging-out
-newgrp libvirt
-groups
+# on some dists, it's auto-started, on some others, it's not
+if virsh -c qemu:///system net-list --name --inactive | grep -qw default;  then
+    virsh -c qemu:///system net-start default
+fi
 
 # only info about the virtualisation is wanted, so no error please.
 sudo virt-host-validate qemu || true
@@ -133,8 +141,8 @@ vagrant plugin list | tee >(grep -q "No plugins installed." && {
 cd $DIR
 
 # sudo su: dirty hack to make sure that usermod change has been taken into account
-sudo su -l "$(whoami)" -c "cd $(pwd) && timeout 300 vagrant up --no-tty --debug"
-sudo su -l "$(whoami)" -c "cd $(pwd) && timeout 300 vagrant halt"
-sudo su -l "$(whoami)" -c "cd $(pwd) && timeout 300 vagrant package --output testbox.box"
-sudo su -l "$(whoami)" -c "cd $(pwd) && vagrant box add testbox.box --name testbox"
-sudo su -l "$(whoami)" -c "cd $(pwd) && vagrant destroy -f"
+timeout 300 vagrant up --no-tty --debug
+timeout 300 vagrant halt
+timeout 300 vagrant package --output testbox.box
+vagrant box add testbox.box --name testbox
+vagrant destroy -f
