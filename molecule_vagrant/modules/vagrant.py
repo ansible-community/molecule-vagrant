@@ -321,6 +321,18 @@ Vagrant.configure('2') do |config|
       provider['options'].each { |key, value|
         eval("libvirt.#{key} = #{value}")
       }
+      # When using qemu instead of kvm, some libvirt systems
+      # will use EPYC as vCPU model inside the new VM.
+      # This will lead to process hang with ssh-keygen -A on alpine.
+      # Not sure were the bug is (libvirt or qemu or alpine or all of them) but using QEMU64
+      # cpu model will work around this. Hopefully, by checking 'cpu_mode' option, it will
+      # allow people to override the model to use.
+      if defined?(provider['options']['driver']) && provider['options']['driver'].include?('qemu')
+        if !provider['options']['cpu_mode']
+          libvirt.cpu_mode = 'custom'
+          libvirt.cpu_model = 'qemu64'
+        end
+      end
 
       # Raw Configuration
       if provider['raw_config_args']
