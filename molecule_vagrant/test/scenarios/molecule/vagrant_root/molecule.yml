@@ -7,7 +7,7 @@ driver:
     name: libvirt
 platforms:
   - name: instance
-    box: centos/7
+    box: ${TESTBOX:-centos/7}
     provider_options:
       driver: "${VIRT_DRIVER:-'kvm'}"
     provision: true
