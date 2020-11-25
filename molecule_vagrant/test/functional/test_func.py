@@ -24,7 +24,8 @@ import os
 
 from molecule import util
 from molecule import logger
-from molecule.test.conftest import run_command, change_dir_to
+from molecule.util import run_command
+from molecule.test.conftest import change_dir_to
 
 LOG = logger.get_logger(__name__)
 
