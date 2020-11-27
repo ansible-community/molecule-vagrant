@@ -37,6 +37,7 @@ multiple platforms but some are disabled due to known bugs.
 
 * ✅ MacOS with VirtualBox - GitHub Actions
 * ✅ Fedora 32 with libvirt - Zuul
+* ✅ Ubuntu Bionic (18.04) with libvirt - Zuul
 * ❌ CentOS 8 with libvirt - Zuul DISABLED due to 1127_ and 11020_
 
 Please **do not file bugs for unsupported platforms**. You are welcomed to
