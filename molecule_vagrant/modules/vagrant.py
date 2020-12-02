@@ -151,226 +151,115 @@ See doc/source/configuration.rst
 """
 
 VAGRANTFILE_TEMPLATE = """
-require 'yaml'
+{%- macro ruby_format(value) -%}
+  {%- if value is boolean -%}
+    {{ value | string | lower }}
+  {%- elif value is string -%}
+    {# "Bug" compat. To be removed later #}
+    {%- if value[0] == value[-1] and value.startswith(("'", '"')) -%}
+    {{ value }}
+    {%- else -%}
+    "{{ value }}"
+    {%- endif -%}
+  {%- else -%}
+    {{ value }}
+  {%- endif -%}
+{%- endmacro -%}
+
+{%- macro dict2args(dictionary) -%}
+  {% set sep = joiner(", ") %}
+  {%- for key, value in dictionary.items() -%}
+    {{ sep() }}{{ key }}: {{ ruby_format(value) }}
+  {%- endfor -%}
+{%- endmacro -%}
 
 Vagrant.configure('2') do |config|
-  vagrant_config_hash = YAML::load_file('{{ vagrantfile_config }}')
-
   if Vagrant.has_plugin?('vagrant-cachier')
     config.cache.scope = 'machine'
   end
 
-  ##
-  # Configs
-  ##
+  config.vm.define "{{ instance.name }}" do |c|
+    ##
+    # Box definition
+    ##
+    c.vm.box = "{{ instance.box }}"
+    {{ 'c.vm.box_version = "{}"'.format(instance.box_version) if instance.box_version }}
+    {{ 'c.vm.box_url = "{}"'.format(instance.box_url) if instance.box_url }}
 
-  c = vagrant_config_hash['config']
-  if !c['options']['synced_folder']
-    config.vm.synced_folder ".", "/vagrant", disabled: true
-  end
-  c['options'].delete('synced_folder')
+    ##
+    # Config options
+    ##
+    {% if instance.config_options['synced_folder'] is sameas false %}
+    c.vm.synced_folder ".", "/vagrant", disabled: true
+    {% endif %}
 
-  c['options'].each { |key, value|
-    eval("config.#{key} = #{value}")
-  }
+    {% for k,v in instance.config_options.items() %}
+    {% if k != 'synced_folder' %}c.{{ k }} = {{ ruby_format(v) }}{% endif %}
+    {% endfor %}
 
-  ##
-  # Platforms
-  ##
+    c.vm.hostname = "{{ instance.name }}"
 
-  platform = vagrant_config_hash['platform']
+    ##
+    # Network
+    ##
+    {% for n in instance.networks %}
+    c.vm.network "{{ network.name }}", {{ dict2args(network.options) }}
+    {% endfor %}
 
-  config.vm.box = platform['box']
+    ##
+    # instance_raw_config_args
+    ##
+    {% if instance.instance_raw_config_args is not none %}{% for arg in instance.instance_raw_config_args -%}
+    c.{{ arg }}
+    {% endfor %}{% endif %}
 
-  if platform['box_version']
-    config.vm.box_version = platform['box_version']
-  end
+    ##
+    # Provider
+    ##
+    c.vm.provider "{{ instance.provider }}" do |{{ instance.provider }}, override|
+      {% if instance.provider.startswith('vmware_') %}
+      {{ instance.provider }}.vmx['memsize'] = {{ instance.memory }}
+      {{ instance.provider }}.vmx['numvcpus'] = {{ instance.cpus }}
+      {% else %}
+      {{ instance.provider }}.memory = {{ instance.memory }}
+      {{ instance.provider }}.cpus = {{ instance.cpus }}
+      {% endif %}
 
-  if platform['box_url']
-    config.vm.box_url = platform['box_url']
-  end
+      {% for option, value in instance.provider_options.items() %}
+      {{ instance.provider }}.{{ option }} = {{ ruby_format(value) }}
+      {% endfor %}
 
-  ##
-  # Provider
-  ##
+      {% if instance.provider_raw_config_args is not none %}
+        {% for arg in instance.provider_raw_config_args %}
+      {{ instance.provider }}.{{ arg }}
+        {% endfor %}
+      {% endif %}
 
-  provider = vagrant_config_hash['provider']
-  provider_memory = provider['options']['memory']
-  provider_cpus = provider['options']['cpus']
-  provider['options'].delete('memory')
-  provider['options'].delete('cpus')
+      {% if instance.provider_override_args is not none %}
+        {% for arg in instance.provider_override_args -%}
+      override.{{ arg }}
+        {% endfor %}
+      {% endif %}
 
-  ##
-  # Virtualbox
-  ##
-
-  if provider['name'] == 'virtualbox'
-    config.vm.provider provider['name'] do |virtualbox, override|
-      virtualbox.memory = provider_memory
-      virtualbox.cpus = provider_cpus
-
-      if defined?(provider['options']['linked_clone'])
-        if Gem::Version.new(Vagrant::VERSION) >= Gem::Version.new('1.8.0')
-          virtualbox.linked_clone = provider['options']['linked_clone']
-        end
-      else
-        if Gem::Version.new(Vagrant::VERSION) >= Gem::Version.new('1.8.0')
-          virtualbox.linked_clone = true
-        end
-      end
-
-      # Custom
-      provider['options'].each { |key, value|
-        if key != 'linked_clone'
-          eval("virtualbox.#{key} = #{value}")
-        end
-      }
-
-      # Raw Configuration
-      if provider['raw_config_args']
-        provider['raw_config_args'].each { |raw_config_arg|
-          eval("virtualbox.#{raw_config_arg}")
-        }
-      end
-
-      if provider['override_args']
-        provider['override_args'].each { |override_arg|
-          eval("override.#{override_arg}")
-        }
-      end
-    end
-
-    # The vagrant-vbguest plugin attempts to update packages
-    # before a RHEL based VM is registered.
-    # TODO: Port from the old .j2, should be done in raw config
-    if (vagrant_config_hash['platform'] =~ /rhel/i) != nil
-      if Vagrant.has_plugin?('vagrant-vbguest')
-        config.vbguest.auto_update = false
-      end
-    end
-  end
-
-  ##
-  # VMware (vmware_fusion, vmware_workstation and vmware_desktop)
-  ##
-
-  if provider['name'].start_with?('vmware_')
-    config.vm.provider provider['name'] do |vmware, override|
-      vmware.vmx['memsize'] = provider_memory
-      vmware.vmx['numvcpus'] = provider_cpus
-
-      # Custom
-      provider['options'].each { |key, value|
-        eval("vmware.#{key} = #{value}")
-      }
-
-      # Raw Configuration
-      if provider['raw_config_args']
-        provider['raw_config_args'].each { |raw_config_arg|
-          eval("vmware.#{raw_config_arg}")
-        }
-      end
-
-      if provider['override_args']
-        provider['override_args'].each { |override_arg|
-          eval("override.#{override_arg}")
-        }
-      end
-    end
-  end
-
-  ##
-  # Parallels
-  ##
-
-  if provider['name'] == 'parallels'
-    config.vm.provider provider['name'] do |parallels, override|
-      parallels.memory = provider_memory
-      parallels.cpus = provider_cpus
-
-      # Custom
-      provider['options'].each { |key, value|
-        eval("parallels.#{key} = #{value}")
-      }
-
-      # Raw Configuration
-      if provider['raw_config_args']
-        provider['raw_config_args'].each { |raw_config_arg|
-          eval("parallels.#{raw_config_arg}")
-        }
-      end
-
-      if provider['override_args']
-        provider['override_args'].each { |override_arg|
-          eval("override.#{override_arg}")
-        }
-      end
-    end
-  end
-
-  ##
-  # Libvirt
-  ##
-
-  if provider['name'] == 'libvirt'
-    config.vm.provider provider['name'] do |libvirt, override|
-      libvirt.memory = provider_memory
-      libvirt.cpus = provider_cpus
-
-      # Custom
-      provider['options'].each { |key, value|
-        eval("libvirt.#{key} = #{value}")
-      }
+      {% if instance.provider == 'virtualbox' %}
+      {% if 'linked_clone' not in instance.provider_options %}
+      virtualbox.linked_clone = true
+      {% endif %}
+      {% endif %}
+      {% if instance.provider == 'libvirt' %}
+        {% if 'driver' in instance.provider_options and 'qemu' in instance.provider_options['driver'] %}
+          {% if 'cpu_mode' not in instance.provider_options %}
       # When using qemu instead of kvm, some libvirt systems
       # will use EPYC as vCPU model inside the new VM.
       # This will lead to process hang with ssh-keygen -A on alpine.
       # Not sure were the bug is (libvirt or qemu or alpine or all of them) but using QEMU64
       # cpu model will work around this. Hopefully, by checking 'cpu_mode' option, it will
       # allow people to override the model to use.
-      if provider['options'].has_key?('driver') && provider['options']['driver'].include?('qemu')
-        if !provider['options'].has_key?('cpu_mode')
-          libvirt.cpu_mode = 'custom'
-          libvirt.cpu_model = 'qemu64'
-        end
-      end
-
-      # Raw Configuration
-      if provider['raw_config_args']
-        provider['raw_config_args'].each { |raw_config_arg|
-          eval("libvirt.#{raw_config_arg}")
-        }
-      end
-
-      if provider['override_args']
-        provider['override_args'].each { |override_arg|
-          eval("override.#{override_arg}")
-        }
-      end
-    end
-  end
-
-
-  ##
-  # Instances
-  ##
-
-  if vagrant_config_hash['instance']
-    instance = vagrant_config_hash['instance']
-    config.vm.define instance['name'] do |c|
-      c.vm.hostname = instance['name']
-
-      if instance['interfaces']
-        instance['interfaces'].each { |interface|
-          c.vm.network "#{interface['network_name']}",
-                       Hash[interface.select{|k| k != 'network_name'}.map{|k,v| [k.to_sym, v]}]
-        }
-      end
-
-      if instance['raw_config_args']
-        instance['raw_config_args'].each { |raw_config_arg|
-          eval("c.#{raw_config_arg}")
-        }
-      end
+      libvirt.cpu_mode = 'custom'
+      libvirt.cpu_model = 'qemu64'
+          {% endif %}
+        {% endif %}
+      {% endif %}
     end
   end
 end
@@ -529,22 +418,15 @@ class VagrantClient(object):
         if self._module.params["workdir"] is not None:
             conf["workdir"] = self._module.params["workdir"]
         conf["vagrantfile"] = os.path.join(conf["workdir"], "Vagrantfile")
-        conf["vagrantfile_config"] = os.path.join(conf["workdir"], "vagrant.yml")
         return conf
 
     def _write_vagrantfile(self):
         template = molecule.util.render_template(
-            VAGRANTFILE_TEMPLATE, vagrantfile_config=self._config["vagrantfile_config"]
+            VAGRANTFILE_TEMPLATE, instance=self._get_vagrant_config_dict()
         )
         molecule.util.write_file(self._vagrantfile, template)
 
-    def _write_vagrantfile_config(self, data):
-        molecule.util.write_file(
-            self._config["vagrantfile_config"], molecule.util.safe_dump(data)
-        )
-
     def _write_configs(self):
-        self._write_vagrantfile_config(self._get_vagrant_config_dict())
         self._write_vagrantfile()
         valid = subprocess.run(
             ["vagrant", "validate"],
@@ -567,50 +449,45 @@ class VagrantClient(object):
         return v
 
     def _get_vagrant_config_dict(self):
+        networks = []
+        for iface in self._module.params["instance_interfaces"]:
+            net = dict()
+            net["name"] = iface["network_name"]
+            iface.pop("network_name")
+            net["options"] = iface
+            networks.append(net)
+
         d = {
-            "config": {
-                # NOTE(retr0h): Options provided here will be passed to
-                # Vagrant as "config.#{key} = #{value}".
-                "options": {
-                    # NOTE(retr0h): `synced_folder` does not represent the
-                    # actual key used by Vagrant.  Is used as a flag to
-                    # simply enable/disable shared folder.
-                    "synced_folder": False,
-                    "ssh.insert_key": True,
-                }
+            "name": self._module.params["instance_name"],
+            "memory": self._module.params["provider_memory"],
+            "cpus": self._module.params["provider_cpus"],
+            "networks": networks,
+            "instance_raw_config_args": self._module.params["instance_raw_config_args"],
+            "config_options": {
+                # NOTE(retr0h): `synced_folder` does not represent the
+                # actual key used by Vagrant.  Is used as a flag to
+                # simply enable/disable shared folder.
+                "synced_folder": False,
+                "ssh.insert_key": True,
             },
-            "platform": {
-                "box": self._module.params["platform_box"],
-                "box_version": self._module.params["platform_box_version"],
-                "box_url": self._module.params["platform_box_url"],
-            },
-            "instance": {
-                "name": self._module.params["instance_name"],
-                "interfaces": self._module.params["instance_interfaces"],
-                "raw_config_args": self._module.params["instance_raw_config_args"],
-            },
-            "provider": {
-                "name": self._module.params["provider_name"],
-                # NOTE(retr0h): Options provided here will be passed to
-                # Vagrant as "$provider_name.#{key} = #{value}".
-                "options": {
-                    "memory": self._module.params["provider_memory"],
-                    "cpus": self._module.params["provider_cpus"],
-                },
-                "raw_config_args": self._module.params["provider_raw_config_args"],
-                "override_args": self._module.params["provider_override_args"],
-            },
+            "box": self._module.params["platform_box"],
+            "box_version": self._module.params["platform_box_version"],
+            "box_url": self._module.params["platform_box_url"],
+            "provider": self._module.params["provider_name"],
+            "provider_options": {},
+            "provider_raw_config_args": self._module.params["provider_raw_config_args"],
+            "provider_override_args": self._module.params["provider_override_args"],
         }
 
-        d["config"]["options"].update(
+        d["config_options"].update(
             molecule.util.merge_dicts(
-                d["config"]["options"], self._module.params["config_options"]
+                d["config_options"], self._module.params["config_options"]
             )
         )
 
-        d["provider"]["options"].update(
+        d["provider_options"].update(
             molecule.util.merge_dicts(
-                d["provider"]["options"], self._module.params["provider_options"]
+                d["provider_options"], self._module.params["provider_options"]
             )
         )
 
