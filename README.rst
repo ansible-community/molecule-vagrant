@@ -86,12 +86,15 @@ Here's a full example with the libvirt provider:
            host: 8080
        # List of raw Vagrant `config` options
        instance_raw_config_args:
-         - 'vagrant.plugins = ["vagrant-libvirt"]'
+         - vagrant.plugins = ["vagrant-libvirt"]
+         # use single quotes to avoid YAML parsing as dict due to ':'
+         - 'vm.synced_folder ".", "/vagrant", type: "rsync"'
        # Dictionary of `config` options. Note that string values need to be
        # explicitly enclosed in quotes.
        config_options:
          ssh.keep_alive: yes
-         ssh.remote_user: "'vagrant'"
+         ssh.remote_user: 'vagrant'
+         synced_folder: true
        box: fedora/32-cloud-base
        box_version: 32.20200422.0
        box_url:
@@ -99,10 +102,10 @@ Here's a full example with the libvirt provider:
        cpus: 1
        # Dictionary of options passed to the provider
        provider_options:
-         video_type: "'vga'"
+         video_type: 'vga'
        # List of raw provider options
        provider_raw_config_args:
-         - "cpuset = '1-4,^3,6'"
+         - cpuset = '1-4,^3,6'
        provision: no
 
 .. _`fedora/32-cloud-base`: https://app.vagrantup.com/fedora/boxes/32-cloud-base
