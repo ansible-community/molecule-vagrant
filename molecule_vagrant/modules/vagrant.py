@@ -327,8 +327,8 @@ Vagrant.configure('2') do |config|
       # Not sure were the bug is (libvirt or qemu or alpine or all of them) but using QEMU64
       # cpu model will work around this. Hopefully, by checking 'cpu_mode' option, it will
       # allow people to override the model to use.
-      if defined?(provider['options']['driver']) && provider['options']['driver'].include?('qemu')
-        if !provider['options']['cpu_mode']
+      if provider['options'].has_key?('driver') && provider['options']['driver'].include?('qemu')
+        if !provider['options'].has_key?('cpu_mode')
           libvirt.cpu_mode = 'custom'
           libvirt.cpu_model = 'qemu64'
         end
