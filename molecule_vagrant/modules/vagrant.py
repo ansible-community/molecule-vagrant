@@ -94,6 +94,16 @@ options:
       - The URL to a Vagrant box.
     required: False
     default: None
+  platform_box_download_checksum:
+    description:
+      - The checksum of the box specified by platform_box_url.
+    required: False
+    default: None
+  platform_box_download_checksum_type:
+    description:
+      - The type of checksum specified by platform_box_download_checksum (if any).
+    required: False
+    default: None
   provider_name:
     description:
       - Name of the Vagrant provider to use.
@@ -188,6 +198,14 @@ Vagrant.configure('2') do |config|
 
   if platform['box_url']
     config.vm.box_url = platform['box_url']
+  end
+
+  if platform['box_download_checksum']
+    config.vm.box_download_checksum = platform['box_download_checksum']
+  end
+
+  if platform['box_download_checksum_type']
+    config.vm.box_download_checksum_type = platform['box_download_checksum_type']
   end
 
   ##
@@ -573,6 +591,12 @@ class VagrantClient(object):
                 "box": self._module.params["platform_box"],
                 "box_version": self._module.params["platform_box_version"],
                 "box_url": self._module.params["platform_box_url"],
+                "box_download_checksum": self._module.params[
+                    "platform_box_download_checksum"
+                ],
+                "box_download_checksum_type": self._module.params[
+                    "platform_box_download_checksum_type"
+                ],
             },
             "instance": {
                 "name": self._module.params["instance_name"],
@@ -630,6 +654,8 @@ def main():
             platform_box=dict(type="str", required=False),
             platform_box_version=dict(type="str"),
             platform_box_url=dict(type="str"),
+            platform_box_download_checksum=dict(type="str"),
+            platform_box_download_checksum_type=dict(type="str"),
             provider_name=dict(type="str", default="virtualbox"),
             provider_memory=dict(type="int", default=512),
             provider_cpus=dict(type="int", default=2),

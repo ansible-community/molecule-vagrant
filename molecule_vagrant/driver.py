@@ -75,6 +75,8 @@ class Vagrant(Driver):
             box: debian/jessie64
             box_version: 10.1
             box_url: http://repo.example.com/images/postmerge/debian.json
+            box_download_checksum: 6d016aa287990152548f0a414048c2edeea7f84b48293cab21506f86649f79b8
+            box_download_checksum_type: sha256
             memory: 1024
             cpus: 1
             provider_options:

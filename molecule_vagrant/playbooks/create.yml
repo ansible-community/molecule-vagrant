@@ -16,6 +16,8 @@
         platform_box: "{{ item.box | default('generic/alpine310') }}"
         platform_box_version: "{{ item.box_version | default(omit) }}"
         platform_box_url: "{{ item.box_url | default(omit) }}"
+        platform_box_download_checksum: "{{ item.box_download_checksum | default(omit) }}"
+        platform_box_download_checksum_type: "{{ item.box_download_checksum_type | default(omit) }}"
 
         provider_name: "{{ molecule_yml.driver.provider.name | default(omit, true) }}"
         provider_memory: "{{ item.memory | default(omit) }}"
