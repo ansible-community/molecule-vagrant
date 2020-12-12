@@ -9,7 +9,7 @@ platforms:
   - name: instance
     box: ${TESTBOX:-centos/7}
     provider_options:
-      driver: "${VIRT_DRIVER:-'kvm'}"
+      driver: ${VIRT_DRIVER:-kvm}
     provision: true
     instance_raw_config_args:
       - "vm.provision :shell, inline: \"echo #{Dir.pwd} > /tmp/workdir\""

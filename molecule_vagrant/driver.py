@@ -162,7 +162,6 @@ class Vagrant(Driver):
     def default_safe_files(self):
         return [
             self.vagrantfile,
-            self.vagrantfile_config,
             self.instance_config,
             os.path.join(self._config.scenario.ephemeral_directory, ".vagrant"),
             os.path.join(self._config.scenario.ephemeral_directory, "vagrant-*.out"),
@@ -200,10 +199,6 @@ class Vagrant(Driver):
     @property
     def vagrantfile(self):
         return os.path.join(self._config.scenario.ephemeral_directory, "Vagrantfile")
-
-    @property
-    def vagrantfile_config(self):
-        return os.path.join(self._config.scenario.ephemeral_directory, "vagrant.yml")
 
     def _get_instance_config(self, instance_name):
         instance_config_dict = util.safe_load_file(self._config.driver.instance_config)
