@@ -73,6 +73,7 @@ Here's a full example with the libvirt provider:
      name: vagrant
      provider:
        # Can be any supported provider (VBox, Parallels, libvirt, etc)
+       # in lower case
        name: libvirt
 
    platforms:
