@@ -548,6 +548,9 @@ def main():
             state=dict(type="str", default="up", choices=["up", "destroy", "halt"]),
             workdir=dict(type="str"),
         ),
+        required_together=[
+            ("platform_box_download_checksum", "platform_box_download_checksum_type"),
+        ],
         supports_check_mode=False,
     )
 
