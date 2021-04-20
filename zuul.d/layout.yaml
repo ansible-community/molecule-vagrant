@@ -9,7 +9,7 @@
     attempts: 2
     vars:
       tox_envlist: py38
-    timeout: 3600
+    timeout: 5400  # 1.5h
 
 # CentOS is unsupported due to:
 # https://github.com/vagrant-libvirt/vagrant-libvirt/issues/1127
