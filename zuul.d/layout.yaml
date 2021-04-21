@@ -9,7 +9,7 @@
     attempts: 2
     vars:
       tox_envlist: py38
-    timeout: 3600
+    timeout: 5400  # 1.5h
 
 # CentOS is unsupported due to:
 # https://github.com/vagrant-libvirt/vagrant-libvirt/issues/1127
@@ -46,13 +46,7 @@
 - project:
     check:
       jobs: &defaults
-        - molecule-tox-linters:
-            vars:
-              test_setup_skip: true
-              tox_envlist: lint,packaging
         # - molecule-vagrant-centos
         - molecule-vagrant-fedora
         # - molecule-vagrant-devel-centos
         - molecule-vagrant-ubuntu-bionic
-    gate:
-      jobs: *defaults
