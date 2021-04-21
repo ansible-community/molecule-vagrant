@@ -175,7 +175,11 @@ VAGRANTFILE_TEMPLATE = """
 
 Vagrant.configure('2') do |config|
   if Vagrant.has_plugin?('vagrant-cachier')
+    {% if instance.config_options['cachier'] is sameas false %}
+    config.cache.disable!
+    {% else %}
     config.cache.scope = 'machine'
+    {% endif %}
   end
 
   config.vm.define "{{ instance.name }}" do |c|
@@ -194,7 +198,7 @@ Vagrant.configure('2') do |config|
     {% endif %}
 
     {% for k,v in instance.config_options.items() %}
-    {% if k != 'synced_folder' %}c.{{ k }} = {{ ruby_format(v) }}{% endif %}
+    {% if k not in ['synced_folder', 'cachier'] %}c.{{ k }} = {{ ruby_format(v) }}{% endif %}
     {% endfor %}
 
     c.vm.hostname = "{{ instance.name }}"
@@ -469,6 +473,7 @@ class VagrantClient(object):
                 # simply enable/disable shared folder.
                 "synced_folder": False,
                 "ssh.insert_key": True,
+                "cachier": True,
             },
             "box": self._module.params["platform_box"],
             "box_version": self._module.params["platform_box_version"],
