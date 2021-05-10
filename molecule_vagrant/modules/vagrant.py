@@ -185,7 +185,11 @@ VAGRANTFILE_TEMPLATE = """
 
 Vagrant.configure('2') do |config|
   if Vagrant.has_plugin?('vagrant-cachier')
+    {% if instance.config_options['cachier'] is sameas false %}
+    config.cache.disable!
+    {% else %}
     config.cache.scope = 'machine'
+    {% endif %}
   end
 
   config.vm.define "{{ instance.name }}" do |c|
@@ -206,7 +210,7 @@ Vagrant.configure('2') do |config|
     {% endif %}
 
     {% for k,v in instance.config_options.items() %}
-    {% if k != 'synced_folder' %}c.{{ k }} = {{ ruby_format(v) }}{% endif %}
+    {% if k not in ['synced_folder', 'cachier'] %}c.{{ k }} = {{ ruby_format(v) }}{% endif %}
     {% endfor %}
 
     c.vm.hostname = "{{ instance.name }}"
@@ -228,22 +232,22 @@ Vagrant.configure('2') do |config|
     ##
     # Provider
     ##
-    c.vm.provider "{{ instance.provider }}" do |{{ instance.provider }}, override|
+    c.vm.provider "{{ instance.provider }}" do |{{ instance.provider | lower }}, override|
       {% if instance.provider.startswith('vmware_') %}
-      {{ instance.provider }}.vmx['memsize'] = {{ instance.memory }}
-      {{ instance.provider }}.vmx['numvcpus'] = {{ instance.cpus }}
+      {{ instance.provider | lower }}.vmx['memsize'] = {{ instance.memory }}
+      {{ instance.provider | lower }}.vmx['numvcpus'] = {{ instance.cpus }}
       {% else %}
-      {{ instance.provider }}.memory = {{ instance.memory }}
-      {{ instance.provider }}.cpus = {{ instance.cpus }}
+      {{ instance.provider | lower }}.memory = {{ instance.memory }}
+      {{ instance.provider | lower }}.cpus = {{ instance.cpus }}
       {% endif %}
 
       {% for option, value in instance.provider_options.items() %}
-      {{ instance.provider }}.{{ option }} = {{ ruby_format(value) }}
+      {{ instance.provider | lower }}.{{ option }} = {{ ruby_format(value) }}
       {% endfor %}
 
       {% if instance.provider_raw_config_args is not none %}
         {% for arg in instance.provider_raw_config_args %}
-      {{ instance.provider }}.{{ arg }}
+      {{ instance.provider | lower }}.{{ arg }}
         {% endfor %}
       {% endif %}
 
@@ -311,7 +315,7 @@ class VagrantClient(object):
 
     @contextlib.contextmanager
     def stdout_cm(self):
-        """ Redirect the stdout to a log file. """
+        """Redirect the stdout to a log file."""
         with open(self._get_stdout_log(), "a+") as fh:
             msg = "### {} ###\n".format(self._datetime)
             fh.write(msg)
@@ -321,7 +325,7 @@ class VagrantClient(object):
 
     @contextlib.contextmanager
     def stderr_cm(self):
-        """ Redirect the stderr to a log file. """
+        """Redirect the stderr to a log file."""
         with open(self._get_stderr_log(), "a+") as fh:
             msg = "### {} ###\n".format(self._datetime)
             fh.write(msg)
@@ -481,6 +485,7 @@ class VagrantClient(object):
                 # simply enable/disable shared folder.
                 "synced_folder": False,
                 "ssh.insert_key": True,
+                "cachier": True,
             },
             "box": self._module.params["platform_box"],
             "box_version": self._module.params["platform_box_version"],

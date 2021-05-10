@@ -46,13 +46,7 @@
 - project:
     check:
       jobs: &defaults
-        - molecule-tox-linters:
-            vars:
-              test_setup_skip: true
-              tox_envlist: lint,packaging
         # - molecule-vagrant-centos
         - molecule-vagrant-fedora
         # - molecule-vagrant-devel-centos
         - molecule-vagrant-ubuntu-bionic
-    gate:
-      jobs: *defaults
