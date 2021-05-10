@@ -303,7 +303,7 @@ class VagrantClient(object):
 
     @contextlib.contextmanager
     def stdout_cm(self):
-        """ Redirect the stdout to a log file. """
+        """Redirect the stdout to a log file."""
         with open(self._get_stdout_log(), "a+") as fh:
             msg = "### {} ###\n".format(self._datetime)
             fh.write(msg)
@@ -313,7 +313,7 @@ class VagrantClient(object):
 
     @contextlib.contextmanager
     def stderr_cm(self):
-        """ Redirect the stderr to a log file. """
+        """Redirect the stderr to a log file."""
         with open(self._get_stderr_log(), "a+") as fh:
             msg = "### {} ###\n".format(self._datetime)
             fh.write(msg)

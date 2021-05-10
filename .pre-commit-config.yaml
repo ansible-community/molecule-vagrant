@@ -4,7 +4,7 @@ default_language_version:
 minimum_pre_commit_version: "1.14.0"
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.3.0
+    rev: v3.4.0
     hooks:
       - id: end-of-file-fixer
       - id: trailing-whitespace
@@ -22,18 +22,18 @@ repos:
     hooks:
       - id: doc8
   - repo: https://github.com/python/black.git
-    rev: 20.8b1
+    rev: 21.5b1
     hooks:
       - id: black
         language_version: python3
   - repo: https://gitlab.com/pycqa/flake8.git
-    rev: 3.8.4
+    rev: 3.9.2
     hooks:
       - id: flake8
         additional_dependencies:
           - flake8-black
   - repo: https://github.com/codespell-project/codespell.git
-    rev: v1.17.1
+    rev: v2.0.0
     hooks:
       - id: codespell
         name: codespell
@@ -45,7 +45,7 @@ repos:
         require_serial: false
         additional_dependencies: []
   - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.25.0
+    rev: v1.26.1
     hooks:
       - id: yamllint
         files: \.(yaml|yml)$
@@ -64,7 +64,7 @@ repos:
         #       use jinja templating, this will often fail and the syntax
         #       error will be discovered in execution anyway)
   - repo: https://github.com/ansible/ansible-lint.git
-    rev: v4.3.5
+    rev: v5.0.8
     hooks:
       - id: ansible-lint
         always_run: true
