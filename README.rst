@@ -95,6 +95,7 @@ Here's a full example with the libvirt provider:
          ssh.keep_alive: yes
          ssh.remote_user: 'vagrant'
          synced_folder: true
+         cachier: false  # disable cachier plugin, if it's detected
        box: fedora/32-cloud-base
        box_version: 32.20200422.0
        box_url:
