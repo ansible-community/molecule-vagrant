@@ -94,6 +94,16 @@ options:
       - The URL to a Vagrant box.
     required: False
     default: None
+  platform_box_download_checksum:
+    description:
+      - The checksum of the box specified by platform_box_url.
+    required: False
+    default: None
+  platform_box_download_checksum_type:
+    description:
+      - The type of checksum specified by platform_box_download_checksum (if any).
+    required: False
+    default: None
   provider_name:
     description:
       - Name of the Vagrant provider to use.
@@ -189,6 +199,8 @@ Vagrant.configure('2') do |config|
     c.vm.box = "{{ instance.box }}"
     {{ 'c.vm.box_version = "{}"'.format(instance.box_version) if instance.box_version }}
     {{ 'c.vm.box_url = "{}"'.format(instance.box_url) if instance.box_url }}
+    {{ 'c.vm.box_download_checksum = "{}"'.format(instance.box_download_checksum) if instance.box_download_checksum }}
+    {{ 'c.vm.box_download_checksum_type = "{}"'.format(instance.box_download_checksum_type) if instance.box_download_checksum_type }}
 
     ##
     # Config options
@@ -478,6 +490,12 @@ class VagrantClient(object):
             "box": self._module.params["platform_box"],
             "box_version": self._module.params["platform_box_version"],
             "box_url": self._module.params["platform_box_url"],
+            "box_download_checksum": self._module.params[
+                "platform_box_download_checksum"
+            ],
+            "box_download_checksum_type": self._module.params[
+                "platform_box_download_checksum_type"
+            ],
             "provider": self._module.params["provider_name"],
             "provider_options": {},
             "provider_raw_config_args": self._module.params["provider_raw_config_args"],
@@ -522,6 +540,8 @@ def main():
             platform_box=dict(type="str", required=False),
             platform_box_version=dict(type="str"),
             platform_box_url=dict(type="str"),
+            platform_box_download_checksum=dict(type="str"),
+            platform_box_download_checksum_type=dict(type="str"),
             provider_name=dict(type="str", default="virtualbox"),
             provider_memory=dict(type="int", default=512),
             provider_cpus=dict(type="int", default=2),
@@ -533,6 +553,9 @@ def main():
             state=dict(type="str", default="up", choices=["up", "destroy", "halt"]),
             workdir=dict(type="str"),
         ),
+        required_together=[
+            ("platform_box_download_checksum", "platform_box_download_checksum_type"),
+        ],
         supports_check_mode=False,
     )
 
