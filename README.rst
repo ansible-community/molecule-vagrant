@@ -90,10 +90,11 @@ Here's a full example with the libvirt provider:
          # use single quotes to avoid YAML parsing as dict due to ':'
          - 'vm.synced_folder ".", "/vagrant", type: "rsync"'
        # Dictionary of `config` options. Note that string values need to be
-       # explicitly enclosed in quotes.
+       # explicitly enclosed in quotes. To protect the quotes from being parsed
+       # away we need to quote string values twice.
        config_options:
          ssh.keep_alive: yes
-         ssh.remote_user: 'vagrant'
+         ssh.remote_user: "'vagrant'"
          synced_folder: true
          cachier: false  # disable cachier plugin, if it's detected
        box: fedora/32-cloud-base
