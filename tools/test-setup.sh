@@ -7,8 +7,6 @@ set -euxo pipefail
 # CentOS 7  : install upstream vagrant rpm and compiles plugin (broken runtime)
 # CentOS 8  : install upstream vagrant rpm and compiles plugin (broken runtime)
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-
 # Bumping system tox because version from CentOS 7 is too old
 # We are not using pip --user due to few bugs in tox role which does not allow
 # us to override how is called. Once these are addressed we will switch back
@@ -136,13 +134,4 @@ vagrant plugin list | tee >(grep -q "No plugins installed." && {
     exit 1
 })
 
-# Used to test that Vagrant is usable and also to pre-download the image
-# we will use during testing.
-cd $DIR
-
-# sudo su: dirty hack to make sure that usermod change has been taken into account
-timeout 300 vagrant up --no-tty --debug
-timeout 300 vagrant halt
-timeout 300 vagrant package --output testbox.box
-vagrant box add testbox.box --name testbox
-vagrant destroy -f
+timeout 600 ./tools/create_testbox.sh
