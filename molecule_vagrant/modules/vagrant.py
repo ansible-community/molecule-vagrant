@@ -219,7 +219,7 @@ Vagrant.configure('2') do |config|
     # Network
     ##
     {% for n in instance.networks %}
-    c.vm.network "{{ network.name }}", {{ dict2args(network.options) }}
+    c.vm.network "{{ n.name }}", {{ dict2args(n.options) }}
     {% endfor %}
 
     ##
