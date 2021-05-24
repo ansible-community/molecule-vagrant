@@ -7,18 +7,13 @@
   tasks:
     - name: Destroy molecule instance(s)
       vagrant:
-        instance_name: "{{ item.name }}"
-        platform_box: "{{ item.box | default(omit) }}"
+        instances: "{{ molecule_yml.platforms }}"
+        default_box: "{{ molecule_yml.driver.default_box | default('generic/alpine310') }}"
         provider_name: "{{ molecule_yml.driver.provider.name | default(omit, true) }}"
-        provider_options: "{{ item.provider_options | default(omit) }}"
-        provider_raw_config_args: "{{ item.provider_raw_config_args | default(omit) }}"
+        cachier: "{{ molecule_yml.driver.cachier | default(omit) }}"
         force_stop: "{{ item.force_stop | default(true) }}"
-
         state: destroy
       register: server
-      with_items: "{{ molecule_yml.platforms }}"
-      loop_control:
-        label: "{{ item.name }}"
       no_log: false
 
     # NOTE(retr0h): Vagrant/VirtualBox sucks and parallelizing instance deletion
