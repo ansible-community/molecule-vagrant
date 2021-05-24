@@ -12,7 +12,6 @@ platforms:
       driver: ${VIRT_DRIVER:-kvm}
       # using session with network leads to troubles
       qemu_use_session: false
-    provision: true
     interfaces:
       - network_name: private_network
         ip: 192.168.56.4
