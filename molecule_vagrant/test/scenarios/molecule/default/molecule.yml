@@ -4,12 +4,8 @@ dependency:
 driver:
   name: vagrant
   provider:
-    name: virtualbox
+    name: libvirt
 platforms:
   - name: instance
-    box: ${TESTBOX:-generic/alpine310}
-    provision: false
-    options:
-      linked_clone: false
 provisioner:
   name: ansible
