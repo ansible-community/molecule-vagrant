@@ -1,0 +1,22 @@
+---
+- name: Check instance-1
+  hosts: instance-1
+  gather_facts: false
+  become: true
+  tasks:
+    - name: ping instance-2  # noqa 305
+      shell:
+        cmd: ping -c3 192.168.123.3
+        warn: false
+      changed_when: false
+
+- name: Change instance-2
+  hosts: instance-2
+  gather_facts: false
+  become: true
+  tasks:
+    - name: ping instance-1  # noqa 305
+      shell:
+        cmd: ping -c3 192.168.123.2
+        warn: false
+      changed_when: false
