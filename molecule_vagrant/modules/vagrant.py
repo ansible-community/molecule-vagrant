@@ -53,16 +53,19 @@ module: vagrant
 short_description: Manage Vagrant instances
 description:
   - Manage the life cycle of Vagrant instances.
-  - Supports check mode. Run with --check and --diff to view config difference,
-    and list of actions to be taken.
 version_added: 2.0
 author:
   - Cisco Systems, Inc.
 options:
+  instances:
+    description:
+      - list of instances to handle
+    required: False
+    default: []
   instance_name:
     description:
       - Assign a name to a new instance or match an existing instance.
-    required: True
+    required: False
     default: None
   instance_interfaces:
     description:
@@ -71,12 +74,12 @@ options:
     default: []
   instance_raw_config_args:
     description:
-      - Additional Vagrant options not explcitly exposed by this module.
+      - Additional Vagrant options not explicitly exposed by this module.
     required: False
     default: None
   config_options:
     description:
-      - Additional config options not explcitly exposed by this module.
+      - Additional config options not explicitly exposed by this module.
     required: False
     default: {}
   platform_box:
@@ -121,17 +124,17 @@ options:
     default: 2
   provider_options:
     description:
-      - Additional provider options not explcitly exposed by this module.
+      - Additional provider options not explicitly exposed by this module.
     required: False
     default: {}
   provider_override_args:
     description:
-      - Additional override options not explcitly exposed by this module.
+      - Additional override options not explicitly exposed by this module.
     required: False
     default: None
   provider_raw_config_args:
     description:
-      - Additional Vagrant options not explcitly exposed by this module.
+      - Additional Vagrant options not explicitly exposed by this module.
     required: False
     default: None
   force_stop:
@@ -150,6 +153,24 @@ options:
       - vagrant working directory
     required: False
     default: content of MOLECULE_EPHEMERAL_DIRECTORY environment variable
+  default_box:
+    description:
+      - Default vagrant box to use when not specified in instance configuration
+    required: False
+    default: None
+  cachier:
+    description:
+      - Cachier scope configuration. Can be "machine" or "box". Any other value
+        will disable cachier.
+    required: False
+    default: "machine"
+  parallel:
+    description:
+      - Enable or disable parallelism when bringing up the VMs by
+        setting VAGRANT_NO_PARALLEL environment variable.
+    required: False
+    default: True
+
 requirements:
     - python >= 2.6
     - python-vagrant
@@ -185,13 +206,14 @@ VAGRANTFILE_TEMPLATE = """
 
 Vagrant.configure('2') do |config|
   if Vagrant.has_plugin?('vagrant-cachier')
-    {% if instance.config_options['cachier'] is sameas false %}
-    config.cache.disable!
+    {% if cachier is not none and cachier in [ "machine", "box" ] %}
+    config.cache.scope = '{{ cachier }}'
     {% else %}
-    config.cache.scope = 'machine'
+    config.cache.disable!
     {% endif %}
   end
 
+{% for instance in instances %}
   config.vm.define "{{ instance.name }}" do |c|
     ##
     # Box definition
@@ -278,6 +300,7 @@ Vagrant.configure('2') do |config|
       {% endif %}
     end
   end
+{% endfor %}
 end
 """.strip()  # noqa
 
@@ -304,6 +327,44 @@ stderr:
 class VagrantClient(object):
     def __init__(self, module):
         self._module = module
+        self.provision = self._module.params["provision"]
+        self.cachier = self._module.params["cachier"]
+
+        # compat
+        if self._module.params["instance_name"] is not None:
+            self._module.warn(
+                "Please convert your playbook to use the instances parameter. Compat layer will be removed later."
+            )
+            self.instances = [
+                {
+                    "name": self._module.params["instance_name"],
+                    "interfaces": self._module.params["instance_interfaces"],
+                    "instance_raw_config_args": self._module.params[
+                        "instance_raw_config_args"
+                    ],
+                    "config_options": self._module.params["config_options"],
+                    "box": self._module.params["platform_box"],
+                    "box_version": self._module.params["platform_box_version"],
+                    "box_url": self._module.params["platform_box_url"],
+                    "box_download_checksum": self._module.params[
+                        "platform_box_download_checksum"
+                    ],
+                    "box_download_checksum_type": self._module.params[
+                        "platform_box_download_checksum_type"
+                    ],
+                    "memory": self._module.params["provider_memory"],
+                    "cpus": self._module.params["provider_cpus"],
+                    "provider_options": self._module.params["provider_options"],
+                    "provider_override_args": self._module.params[
+                        "provider_override_args"
+                    ],
+                    "provider_raw_config_args": self._module.params[
+                        "provider_raw_config_args"
+                    ],
+                }
+            ]
+        else:
+            self.instances = self._module.params["instances"]
 
         self._config = self._get_config()
         self._vagrantfile = self._config["vagrantfile"]
@@ -355,9 +416,9 @@ class VagrantClient(object):
 
     def up(self):
         changed = False
-        if not self._running():
+        if self._running() != len(self.instances):
             changed = True
-            provision = self._module.params["provision"]
+            provision = self.provision
             try:
                 self._vagrant.up(provision=provision)
             except Exception:
@@ -368,18 +429,25 @@ class VagrantClient(object):
         # NOTE(retr0h): Ansible wants only one module return `fail_json`
         # or `exit_json`.
         if not self._has_error:
+            # compat
+            if self._module.params["instance_name"] is not None:
+                self._module.exit_json(
+                    changed=changed, log=self._get_stdout_log(), **self._conf()[0]
+                )
             self._module.exit_json(
-                changed=changed, log=self._get_stdout_log(), **self._conf()
+                changed=changed, log=self._get_stdout_log(), results=self._conf()
             )
 
-        msg = "Failed to start the VM: See log file '{}'".format(self._get_stderr_log())
+        msg = "Failed to start the VM(s): See log file '{}'".format(
+            self._get_stderr_log()
+        )
         with io.open(self._get_stderr_log(), "r", encoding="utf-8") as f:
             self.result["stderr"] = f.read()
         self._module.fail_json(msg=msg, **self.result)
 
     def destroy(self):
         changed = False
-        if self._created():
+        if self._created() > 0:
             changed = True
             if self._module.params["force_stop"]:
                 self._vagrant.halt(force=True)
@@ -389,15 +457,13 @@ class VagrantClient(object):
 
     def halt(self):
         changed = False
-        if self._running():
+        if self._running() > 0:
             changed = True
             self._vagrant.halt(force=self._module.params["force_stop"])
 
         self._module.exit_json(changed=changed)
 
-    def _conf(self):
-        instance_name = self._module.params["instance_name"]
-
+    def _conf_instance(self, instance_name):
         try:
             return self._vagrant.conf(vm_name=instance_name)
         except Exception:
@@ -408,8 +474,7 @@ class VagrantClient(object):
                 self.result["stderr"] = f.read()
                 self._module.fail_json(msg=msg, **self.result)
 
-    def _status(self):
-        instance_name = self._module.params["instance_name"]
+    def _status_instance(self, instance_name):
         try:
             s = self._vagrant.status(vm_name=instance_name)[0]
 
@@ -422,25 +487,62 @@ class VagrantClient(object):
                 self.result["stderr"] = f.read()
                 self._module.fail_json(msg=msg, **self.result)
 
+    def _conf(self):
+        conf = []
+
+        for i in self.instances:
+            instance_name = i["name"]
+            c = self._conf_instance(instance_name)
+            if c:
+                conf.append(c)
+
+        return conf
+
+    def _status(self):
+        vms_status = []
+
+        for i in self.instances:
+            instance_name = i["name"]
+            s = self._status_instance(instance_name)
+            if s:
+                vms_status.append(s)
+
+        return vms_status
+
     def _created(self):
         status = self._status()
-        return status.get("state") != "not_created"
+        if len(status) == 0:
+            return 0
+
+        count = sum(map(lambda s: s["state"] == "not_created", status))
+        return len(status)-count
 
     def _running(self):
         status = self._status()
-        return status.get("state") == "running"
+        if len(status) == 0:
+            return 0
+
+        count = sum(map(lambda s: s["state"] == "running", status))
+        return count
 
     def _get_config(self):
         conf = dict()
         conf["workdir"] = os.getenv("MOLECULE_EPHEMERAL_DIRECTORY")
         if self._module.params["workdir"] is not None:
             conf["workdir"] = self._module.params["workdir"]
+        if conf["workdir"] is None:
+            self._module.fail_json(
+                msg="Either workdir parameter or MOLECULE_EPHEMERAL_DIRECTORY env variable has to be set"
+            )
         conf["vagrantfile"] = os.path.join(conf["workdir"], "Vagrantfile")
         return conf
 
     def _write_vagrantfile(self):
+        instances = self._get_vagrant_config_dict()
         template = molecule.util.render_template(
-            VAGRANTFILE_TEMPLATE, instance=self._get_vagrant_config_dict()
+            VAGRANTFILE_TEMPLATE,
+            instances=instances,
+            cachier=self.cachier,
         )
         molecule.util.write_file(self._vagrantfile, template)
 
@@ -458,65 +560,91 @@ class VagrantClient(object):
             )
 
     def _get_vagrant(self):
+        vagrant_env = os.environ.copy()
+        if self._module.params["parallel"] is False:
+            vagrant_env["VAGRANT_NO_PARALLEL"] = "1"
         v = vagrant.Vagrant(
             out_cm=self.stdout_cm,
             err_cm=self.stderr_cm,
             root=self._config["workdir"],
+            env=vagrant_env,
         )
 
         return v
 
-    def _get_vagrant_config_dict(self):
-        networks = []
-        for iface in self._module.params["instance_interfaces"]:
-            net = dict()
-            net["name"] = iface["network_name"]
-            iface.pop("network_name")
-            net["options"] = iface
-            networks.append(net)
+    def _get_instance_vagrant_config_dict(self, instance):
 
+        checksum = instance.get("box_download_checksum")
+        checksum_type = instance.get("box_download_checksum_type")
+        if bool(checksum) ^ bool(checksum_type):
+            self._module.fail_json(
+                msg="box_download_checksum and box_download_checksum_type must be used together"
+            )
+
+        networks = []
+        if "interfaces" in instance:
+            for iface in instance["interfaces"]:
+                net = dict()
+                net["name"] = iface["network_name"]
+                iface.pop("network_name")
+                net["options"] = iface
+                networks.append(net)
+
+        # compat
+        provision = instance.get("provision")
+        if provision is not None:
+            self.provision = self.provision or provision
+            self._module.warn(
+                "Please convert your molecule.yml to move provision parameter to driver:. Compat layer will be removed later."
+            )
         d = {
-            "name": self._module.params["instance_name"],
-            "memory": self._module.params["provider_memory"],
-            "cpus": self._module.params["provider_cpus"],
+            "name": instance.get("name"),
+            "memory": instance.get("memory", 512),
+            "cpus": instance.get("cpus", 2),
             "networks": networks,
-            "instance_raw_config_args": self._module.params["instance_raw_config_args"],
+            "instance_raw_config_args": instance.get("instance_raw_config_args", None),
             "config_options": {
                 # NOTE(retr0h): `synced_folder` does not represent the
                 # actual key used by Vagrant.  Is used as a flag to
                 # simply enable/disable shared folder.
                 "synced_folder": False,
                 "ssh.insert_key": True,
-                "cachier": True,
             },
-            "box": self._module.params["platform_box"],
-            "box_version": self._module.params["platform_box_version"],
-            "box_url": self._module.params["platform_box_url"],
-            "box_download_checksum": self._module.params[
-                "platform_box_download_checksum"
-            ],
-            "box_download_checksum_type": self._module.params[
-                "platform_box_download_checksum_type"
-            ],
+            "box": instance.get("box", self._module.params["default_box"]),
+            "box_version": instance.get("box_version"),
+            "box_url": instance.get("box_url"),
+            "box_download_checksum": checksum,
+            "box_download_checksum_type": checksum_type,
             "provider": self._module.params["provider_name"],
             "provider_options": {},
-            "provider_raw_config_args": self._module.params["provider_raw_config_args"],
-            "provider_override_args": self._module.params["provider_override_args"],
+            "provider_raw_config_args": instance.get("provider_raw_config_args", None),
+            "provider_override_args": instance.get("provider_override_args", None),
         }
 
         d["config_options"].update(
             molecule.util.merge_dicts(
-                d["config_options"], self._module.params["config_options"]
+                d["config_options"], instance.get("config_options", {})
             )
         )
+        if "cachier" in d["config_options"]:
+            self.cachier = d["config_options"]["cachier"]
+            self._module.warn(
+                "Please convert your molecule.yml to move cachier parameter to driver:. Compat layer will be removed later."
+            )
 
         d["provider_options"].update(
             molecule.util.merge_dicts(
-                d["provider_options"], self._module.params["provider_options"]
+                d["provider_options"], instance.get("provider_options", {})
             )
         )
 
         return d
+
+    def _get_vagrant_config_dict(self):
+        config_list = []
+        for instance in self.instances:
+            config_list.append(self._get_instance_vagrant_config_dict(instance))
+        return config_list
 
     def _get_stdout_log(self):
         return self._get_vagrant_log("out")
@@ -525,17 +653,14 @@ class VagrantClient(object):
         return self._get_vagrant_log("err")
 
     def _get_vagrant_log(self, __type):
-        instance_name = self._module.params["instance_name"]
-
-        return os.path.join(
-            self._config["workdir"], "vagrant-{}.{}".format(instance_name, __type)
-        )
+        return os.path.join(self._config["workdir"], "vagrant.{}".format(__type))
 
 
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            instance_name=dict(type="str", required=True),
+            instances=dict(type="list", required=False),
+            instance_name=dict(type="str", required=False, default=None),
             instance_interfaces=dict(type="list", default=[]),
             instance_raw_config_args=dict(type="list", default=None),
             config_options=dict(type="dict", default={}),
@@ -544,22 +669,31 @@ def main():
             platform_box_url=dict(type="str"),
             platform_box_download_checksum=dict(type="str"),
             platform_box_download_checksum_type=dict(type="str"),
-            provider_name=dict(type="str", default="virtualbox"),
             provider_memory=dict(type="int", default=512),
             provider_cpus=dict(type="int", default=2),
             provider_options=dict(type="dict", default={}),
             provider_override_args=dict(type="list", default=None),
             provider_raw_config_args=dict(type="list", default=None),
+            provider_name=dict(type="str", default="virtualbox"),
+            default_box=dict(type="str", default=None),
             provision=dict(type="bool", default=False),
             force_stop=dict(type="bool", default=False),
+            cachier=dict(type="str", default="machine"),
             state=dict(type="str", default="up", choices=["up", "destroy", "halt"]),
             workdir=dict(type="str"),
+            parallel=dict(type="bool", default=True),
         ),
         required_together=[
             ("platform_box_download_checksum", "platform_box_download_checksum_type"),
+            ("instances", "default_box"),
         ],
         supports_check_mode=False,
     )
+
+    if not (bool(module.params["instances"]) ^ bool(module.params["instance_name"])):
+        module.fail_json(
+            msg="Either instances or instance_name parameters should be used and not at the same time"
+        )
 
     v = VagrantClient(module)
 
