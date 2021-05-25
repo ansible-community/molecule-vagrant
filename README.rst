@@ -73,7 +73,21 @@ Here's a full example with the libvirt provider:
      name: vagrant
      provider:
        # Can be any supported provider (virtualbox, parallels, libvirt, etc)
+       # Defaults to virtualbox
        name: libvirt
+     # Run vagrant up with --provision.
+     # Defaults to --no-provision)
+     provision: no
+     # vagrant-cachier configuration
+     # Defaults to 'machine'
+     # Any value different from 'machine' or 'box' will disable it
+     cachier: machine
+     # If set to false, set VAGRANT_NO_PARALLEL to '1'
+     # Defaults to true
+     parallel: true
+     # vagrant box to use by default
+     # Defaults to 'generic/alpine310'
+     default_box: 'generic/alpine310'
 
    platforms:
      - name: instance
@@ -81,21 +95,26 @@ Here's a full example with the libvirt provider:
        interfaces:
          # `network_name` is the required identifier, all other keys map to
          # arguments.
+         - auto_config: true
+           network_name: private_network
+           type: dhcp
+         - network_name: private_network
+           ip: 192.168.123.3
          - network_name: forwarded_port
            guest: 80
            host: 8080
        # List of raw Vagrant `config` options
        instance_raw_config_args:
-         - vagrant.plugins = ["vagrant-libvirt"]
          # use single quotes to avoid YAML parsing as dict due to ':'
          - 'vm.synced_folder ".", "/vagrant", type: "rsync"'
+         # Run 'uname' a provisionning step **needs 'provision: true' to work**
+         - 'vm.provision :shell, inline: "uname"'
        # Dictionary of `config` options. Note that string values need to be
        # explicitly enclosed in quotes.
        config_options:
          ssh.keep_alive: yes
          ssh.remote_user: 'vagrant'
          synced_folder: true
-         cachier: false  # disable cachier plugin, if it's detected
        box: fedora/32-cloud-base
        box_version: 32.20200422.0
        box_url:
@@ -107,9 +126,13 @@ Here's a full example with the libvirt provider:
        # List of raw provider options
        provider_raw_config_args:
          - cpuset = '1-4,^3,6'
-       provision: no
 
 .. _`fedora/32-cloud-base`: https://app.vagrantup.com/fedora/boxes/32-cloud-base
+
+
+More examples may be found in the ``molecule`` directory.
+They're the scenarii used by the CI.
+
 
 .. _get-involved:
 
