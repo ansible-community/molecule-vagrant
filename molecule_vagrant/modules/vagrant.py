@@ -162,7 +162,7 @@ See doc/source/configuration.rst
 
 VAGRANTFILE_TEMPLATE = """
 {%- macro ruby_format(value) -%}
-  {%- if value is boolean -%}
+  {%- if value is sameas true or value is sameas false -%}
     {{ value | string | lower }}
   {%- elif value is string -%}
     {# "Bug" compat. To be removed later #}
