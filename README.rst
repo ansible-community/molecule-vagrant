@@ -72,7 +72,7 @@ Here's a full example with the libvirt provider:
    driver:
      name: vagrant
      provider:
-       # Can be any supported provider (VirtualBox, Parallels, libvirt, etc)
+       # Can be any supported provider (virtualbox, parallels, libvirt, etc)
        name: libvirt
 
    platforms:
