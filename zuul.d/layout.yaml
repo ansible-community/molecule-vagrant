@@ -2,10 +2,10 @@
 # zuul.d/layout.yaml
 
 - job:
-    name: molecule-vagrant-fedora
+    name: molecule-vagrant-ubuntu-bionic-py38
     description: Run py38 tox environment
     parent: ansible-tox-py38
-    nodeset: fedora-latest-1vcpu
+    nodeset: ubuntu-bionic-4vcpu
     attempts: 2
     vars:
       tox_envlist: py38
@@ -34,10 +34,10 @@
 #     timeout: 3600
 
 - job:
-    name: molecule-vagrant-ubuntu-bionic
+    name: molecule-vagrant-ubuntu-bionic-py36
     description: Run py36 tox environment
     parent: ansible-tox-py36
-    nodeset: ubuntu-bionic-1vcpu
+    nodeset: ubuntu-bionic-4vcpu
     attempts: 2
     vars:
       tox_envlist: py36
@@ -47,6 +47,7 @@
     check:
       jobs: &defaults
         # - molecule-vagrant-centos
-        - molecule-vagrant-fedora
+        # - molecule-vagrant-fedora
         # - molecule-vagrant-devel-centos
-        - molecule-vagrant-ubuntu-bionic
+        - molecule-vagrant-ubuntu-bionic-py38
+        - molecule-vagrant-ubuntu-bionic-py36
