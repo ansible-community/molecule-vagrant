@@ -25,7 +25,7 @@ import os
 from molecule import util
 from molecule import logger
 from molecule.util import run_command
-from molecule.test.conftest import change_dir_to
+from molecule.test.conftest import change_dir_to, molecule_directory
 
 LOG = logger.get_logger(__name__)
 
@@ -38,8 +38,7 @@ def test_command_init_scenario(temp_dir):
     assert result.returncode == 0
 
     with change_dir_to(role_directory):
-        molecule_directory = pytest.helpers.molecule_directory()
-        scenario_directory = os.path.join(molecule_directory, "test-scenario")
+        scenario_directory = os.path.join(molecule_directory(), "test-scenario")
         cmd = [
             "molecule",
             "init",
