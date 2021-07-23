@@ -21,7 +21,7 @@
         label: "{{ item.name }}"
       no_log: false
 
-    # NOTE(retr0h): Vagrant/VBox sucks and parallelizing instance deletion
+    # NOTE(retr0h): Vagrant/VirtualBox sucks and parallelizing instance deletion
     # causes issues.
 
     # Mandatory configuration for Molecule to function.
