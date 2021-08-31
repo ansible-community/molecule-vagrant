@@ -72,7 +72,7 @@ Here's a full example with the libvirt provider:
    driver:
      name: vagrant
      provider:
-       # Can be any supported provider (VBox, Parallels, libvirt, etc)
+       # Can be any supported provider (virtualbox, parallels, libvirt, etc)
        name: libvirt
 
    platforms:
@@ -144,7 +144,7 @@ License
 
 The `MIT`_ License.
 
-.. _`MIT`: https://github.com/ansible/molecule/blob/master/LICENSE
+.. _`MIT`: https://github.com/ansible-community/molecule-vagrant/blob/main/LICENSE
 
 The logo is licensed under the `Creative Commons NoDerivatives 4.0 License`_.
 
