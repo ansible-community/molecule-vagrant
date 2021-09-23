@@ -4,7 +4,8 @@
 - job:
     name: molecule-vagrant-fedora
     description: Run py38 tox environment
-    parent: ansible-tox-py38
+    parent: tox-py38
+    pre-run: tools/tox-py38/pre.yml
     nodeset: fedora-latest-1vcpu
     attempts: 2
     vars:
