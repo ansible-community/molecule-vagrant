@@ -1,6 +1,8 @@
 ---
 - hosts: all
   gather_facts: true
+  gather_subset:
+    - network
   tasks:
   - name: Set interface dict name
     set_fact:
