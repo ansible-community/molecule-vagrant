@@ -355,7 +355,7 @@ class VagrantClient(object):
 
     def up(self):
         changed = False
-        if not self._created():
+        if not self._running():
             changed = True
             provision = self._module.params["provision"]
             try:
@@ -389,7 +389,7 @@ class VagrantClient(object):
 
     def halt(self):
         changed = False
-        if self._created():
+        if self._running():
             changed = True
             self._vagrant.halt(force=self._module.params["force_stop"])
 
@@ -424,9 +424,11 @@ class VagrantClient(object):
 
     def _created(self):
         status = self._status()
-        if status and status["state"] == "running":
-            return status
-        return {}
+        return status.get("state") != "not_created"
+
+    def _running(self):
+        status = self._status()
+        return status.get("state") == "running"
 
     def _get_config(self):
         conf = dict()
