@@ -18,16 +18,16 @@ repos:
         # https://github.com/pre-commit/pre-commit-hooks/issues/273
         args: ["--unsafe"]
   - repo: https://github.com/PyCQA/doc8.git
-    rev: 0.9.0
+    rev: 0.9.1
     hooks:
       - id: doc8
-  - repo: https://github.com/python/black.git
-    rev: 21.8b0
+  - repo: https://github.com/psf/black
+    rev: 21.10b0
     hooks:
       - id: black
         language_version: python3
-  - repo: https://gitlab.com/pycqa/flake8.git
-    rev: 3.9.2
+  - repo: https://github.com/PyCQA/flake8
+    rev: 4.0.1
     hooks:
       - id: flake8
         additional_dependencies:
@@ -52,7 +52,7 @@ repos:
         types: [file, yaml]
         entry: yamllint --strict -f parsable
   - repo: https://github.com/openstack-dev/bashate.git
-    rev: 2.0.0
+    rev: 2.1.0
     hooks:
       - id: bashate
         entry: bashate --error . --ignore=E006,E040
@@ -64,7 +64,7 @@ repos:
         #       use jinja templating, this will often fail and the syntax
         #       error will be discovered in execution anyway)
   - repo: https://github.com/ansible/ansible-lint.git
-    rev: v5.1.3
+    rev: v5.2.1
     hooks:
       - id: ansible-lint
         always_run: true
