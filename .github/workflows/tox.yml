@@ -19,7 +19,9 @@ jobs:
     name: ${{ matrix.tox_env }}
     # macos is the only gh action platform with support for vagrant/virtualbox
     # https://github.com/actions/virtual-environments/issues/433
-    runs-on: macos-latest
+    # Keep 10.15 for now as there's no vagrant in macosx-latest
+    # ref: https://github.com/actions/virtual-environments/issues/4060
+    runs-on: macos-10.15
     strategy:
       fail-fast: false
       matrix:
