@@ -515,7 +515,7 @@ class VagrantClient(object):
             return 0
 
         count = sum(map(lambda s: s["state"] == "not_created", status))
-        return len(status)-count
+        return len(status) - count
 
     def _running(self):
         status = self._status()
