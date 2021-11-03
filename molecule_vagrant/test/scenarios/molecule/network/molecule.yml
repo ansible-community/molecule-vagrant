@@ -15,7 +15,7 @@ platforms:
     provision: true
     interfaces:
       - network_name: private_network
-        type: dhcp
+        ip: 192.168.56.4
         auto_config: true
 provisioner:
   name: ansible

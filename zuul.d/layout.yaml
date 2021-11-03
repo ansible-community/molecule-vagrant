@@ -3,12 +3,13 @@
 
 - job:
     name: molecule-vagrant-fedora
-    description: Run py38 tox environment
-    parent: ansible-tox-py38
+    description: Run py39 tox environment
+    parent: tox-py39
+    pre-run: tools/tox-py39/pre.yml
     nodeset: fedora-latest-1vcpu
     attempts: 2
     vars:
-      tox_envlist: py38
+      tox_envlist: py39
     timeout: 5400  # 1.5h
 
 # CentOS is unsupported due to:
