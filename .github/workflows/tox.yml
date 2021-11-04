@@ -21,27 +21,36 @@ jobs:
     # https://github.com/actions/virtual-environments/issues/433
     # Keep 10.15 for now as there's no vagrant in macosx-latest
     # ref: https://github.com/actions/virtual-environments/issues/4060
-    runs-on: macos-10.15
+    runs-on: ${{ matrix.platform }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - tox_env: lint
+            platform: ubuntu-latest
+            skip_vagrant: true
           - tox_env: py36
             PREFIX: PYTEST_REQPASS=6
+            platform: macos-10.15
           - tox_env: py36-devel
             PREFIX: PYTEST_REQPASS=6
+            platform: macos-10.15
           - tox_env: py39
             PREFIX: PYTEST_REQPASS=6
+            platform: macos-10.15
           - tox_env: py39-devel
             PREFIX: PYTEST_REQPASS=6
+            platform: macos-10.15
           - tox_env: packaging
+            platform: ubuntu-latest
+            skip_vagrant: true
 
     steps:
       - name: Check vagrant presence
         run: |
           vagrant version
           vagrant plugin list
+        if: ${{ ! matrix.skip_vagrant }}
       - name: Check out src from Git
         uses: actions/checkout@v1
       - name: Find python version
@@ -68,6 +77,7 @@ jobs:
       - name: Create test box
         run: |
           ./tools/create_testbox.sh
+        if: ${{ ! matrix.skip_vagrant }}
       - name: Run tox -e ${{ matrix.tox_env }}
         run: |
           echo "${{ matrix.PREFIX }} tox -e ${{ matrix.tox_env }}"
