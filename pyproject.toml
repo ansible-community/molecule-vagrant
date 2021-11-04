@@ -1,9 +1,11 @@
 [build-system]
 requires = [
-  "setuptools >= 41.0.0",
-  "setuptools_scm >= 1.15.0",
+  "setuptools >= 42.0.0",  # required by pyproject+setuptools_scm integration
+  "setuptools_scm[toml] >= 3.5.0",  # required for "no-local-version" scheme
   "setuptools_scm_git_archive >= 1.0",
   "wheel",
-  "pip",
 ]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+local_scheme = "no-local-version"
