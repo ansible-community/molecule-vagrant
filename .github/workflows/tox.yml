@@ -29,18 +29,14 @@ jobs:
           - tox_env: lint
             platform: ubuntu-latest
             skip_vagrant: true
-          - tox_env: py36
+          - tox_env: py36,py36-devel
+            python_ver: "3.6"
             PREFIX: PYTEST_REQPASS=9
             platform: macos-10.15
-          - tox_env: py36-devel
+          - tox_env: py39,py39-devel
             PREFIX: PYTEST_REQPASS=9
             platform: macos-10.15
-          - tox_env: py39
-            PREFIX: PYTEST_REQPASS=9
-            platform: macos-10.15
-          - tox_env: py39-devel
-            PREFIX: PYTEST_REQPASS=9
-            platform: macos-10.15
+            python_ver: "3.9"
           - tox_env: packaging
             platform: ubuntu-latest
             skip_vagrant: true
@@ -51,33 +47,30 @@ jobs:
           vagrant version
           vagrant plugin list
         if: ${{ ! matrix.skip_vagrant }}
+
       - name: Check out src from Git
         uses: actions/checkout@v1
-      - name: Find python version
-        id: py_ver
-        shell: python
-        if: ${{ contains(matrix.tox_env, 'py') }}
-        run: |
-          v = '${{ matrix.tox_env }}'.split('-')[0].lstrip('py')
-          print('::set-output name=version::{0}.{1}'.format(v[0],v[1:]))
-      # Even our lint and other envs need access to tox
+
       - name: Install a default Python
         uses: actions/setup-python@v2
-        if: ${{ ! contains(matrix.tox_env, 'py') }}
+
       # Be sure to install the version of python needed by a specific test, if necessary
       - name: Set up Python version
         uses: actions/setup-python@v2
-        if: ${{ contains(matrix.tox_env, 'py') }}
+        if: ${{ matrix.python_version }}
         with:
-          python-version: ${{ steps.py_ver.outputs.version }}
+          python-version: ${{ matrix.python_version }}
+
       - name: Install dependencies
         run: |
           python -m pip install -U pip
           pip install tox
+
       - name: Create test box
         run: |
           ./tools/create_testbox.sh
         if: ${{ ! matrix.skip_vagrant }}
+
       - name: Run tox -e ${{ matrix.tox_env }}
         run: |
           echo "${{ matrix.PREFIX }} tox -e ${{ matrix.tox_env }}"
