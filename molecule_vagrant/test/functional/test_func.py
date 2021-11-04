@@ -24,6 +24,7 @@ import os
 
 from molecule import util
 from molecule import logger
+from molecule.scenario import ephemeral_directory
 from molecule.util import run_command
 from molecule.test.conftest import change_dir_to
 
@@ -65,7 +66,14 @@ def test_command_init_scenario(temp_dir):
 
 @pytest.mark.parametrize(
     "scenario",
-    [("vagrant_root"), ("config_options"), ("provider_config_options"), ("network")],
+    [
+        ("vagrant_root"),
+        ("config_options"),
+        ("provider_config_options"),
+        ("default"),
+        ("default-compat"),
+        ("network"),
+    ],
 )
 def test_vagrant_root(temp_dir, scenario):
 
@@ -81,3 +89,28 @@ def test_vagrant_root(temp_dir, scenario):
         cmd = ["molecule", "test", "--scenario-name", scenario]
         result = run_command(cmd)
         assert result.returncode == 0
+
+
+def test_multi_node(temp_dir):
+
+    env = os.environ
+    if not os.path.exists("/dev/kvm"):
+        env.update({"VIRT_DRIVER": "'qemu'"})
+
+    scenario_directory = os.path.join(
+        os.path.dirname(util.abs_path(__file__)), os.path.pardir, "scenarios"
+    )
+
+    with change_dir_to(scenario_directory):
+        cmd = ["molecule", "test", "--scenario-name", "multi-node"]
+        result = run_command(cmd)
+        assert result.returncode == 0
+
+    molecule_eph_directory = ephemeral_directory()
+    vagrantfile = os.path.join(
+        molecule_eph_directory, "scenarios", "multi-node", "Vagrantfile"
+    )
+    with open(vagrantfile) as f:
+        content = f.read()
+        assert "instance-1" in content
+        assert "instance-2" in content
