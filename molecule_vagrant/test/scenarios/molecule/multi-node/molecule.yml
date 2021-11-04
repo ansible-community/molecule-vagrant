@@ -9,11 +9,8 @@ platforms:
   - name: instance-1
     box: ${TESTBOX:-debian/jessie64}
     interfaces:
-      - auto_config: true
-        network_name: private_network
-        type: dhcp
       - network_name: private_network
-        ip: 192.168.123.2
+        ip: 192.168.56.2
     groups:
       - foo
       - bar
@@ -30,11 +27,8 @@ platforms:
   - name: instance-2
     box: ${TESTBOX:-centos/7}
     interfaces:
-      - auto_config: true
-        network_name: private_network
-        type: dhcp
       - network_name: private_network
-        ip: 192.168.123.3
+        ip: 192.168.56.3
     groups:
       - foo
       - baz

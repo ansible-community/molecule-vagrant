@@ -6,7 +6,7 @@
   tasks:
     - name: ping instance-2  # noqa 305
       shell:
-        cmd: ping -c3 192.168.123.3
+        cmd: ping -c3 192.168.56.3
         warn: false
       changed_when: false
 
@@ -17,6 +17,6 @@
   tasks:
     - name: ping instance-1  # noqa 305
       shell:
-        cmd: ping -c3 192.168.123.2
+        cmd: ping -c3 192.168.56.2
         warn: false
       changed_when: false
