@@ -30,13 +30,13 @@ jobs:
             platform: ubuntu-latest
             skip_vagrant: true
           - tox_env: py36,py36-devel
-            python_ver: "3.6"
+            python_version: "3.6"
             PREFIX: PYTEST_REQPASS=9
             platform: macos-10.15
           - tox_env: py39,py39-devel
             PREFIX: PYTEST_REQPASS=9
             platform: macos-10.15
-            python_ver: "3.9"
+            python_version: "3.9"
           - tox_env: packaging
             platform: ubuntu-latest
             skip_vagrant: true
