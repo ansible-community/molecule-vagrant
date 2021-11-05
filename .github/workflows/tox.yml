@@ -51,6 +51,14 @@ jobs:
       - name: Check out src from Git
         uses: actions/checkout@v1
 
+      - name: Enable vagrant box caching
+        uses: actions/cache@v2
+        if: ${{ ! matrix.skip_vagrant }}
+        with:
+          path: |
+            ~/.vagrant.d/boxes
+          key: ${{ runner.os }}-${{ hashFiles('tools/Vagrantfile') }}
+
       - name: Install a default Python
         uses: actions/setup-python@v2
 
