@@ -7,7 +7,9 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # we will use during testing.
 cd $DIR
 
-# sudo su: dirty hack to make sure that usermod change has been taken into account
+vagrant box list |grep -qw testbox && exit 0
+
+rm -f testbox.box
 vagrant up --no-tty --debug
 vagrant halt
 vagrant package --output testbox.box
