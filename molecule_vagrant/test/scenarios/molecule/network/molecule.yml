@@ -9,7 +9,6 @@ platforms:
   - name: instance
     box: ${TESTBOX:-centos/7}
     provider_options:
-      driver: ${VIRT_DRIVER:-kvm}
       # using session with network leads to troubles
       qemu_use_session: false
     interfaces:
