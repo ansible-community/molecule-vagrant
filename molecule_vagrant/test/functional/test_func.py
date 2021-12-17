@@ -54,7 +54,9 @@ def test_command_init_scenario(temp_dir):
         env = os.environ
         if "TESTBOX" in env:
             conf["platforms"][0]["box"] = env["TESTBOX"]
-        if 'vagrant-libvirt' in list(map(lambda x: x.name, vagrant.Vagrant().plugin_list())):
+        if "vagrant-libvirt" in list(
+            map(lambda x: x.name, vagrant.Vagrant().plugin_list())
+        ):
             conf["driver"]["provider"] = {"name": "libvirt"}
         util.write_file(confpath, util.safe_dump(conf))
 
