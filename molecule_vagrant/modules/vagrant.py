@@ -254,22 +254,22 @@ Vagrant.configure('2') do |config|
     ##
     # Provider
     ##
-    c.vm.provider "{{ instance.provider }}" do |{{ instance.provider | lower }}, override|
+    c.vm.provider "{{ instance.provider }}" do |{{ instance.name | lower }}, override|
       {% if instance.provider.startswith('vmware_') %}
-      {{ instance.provider | lower }}.vmx['memsize'] = {{ instance.memory }}
-      {{ instance.provider | lower }}.vmx['numvcpus'] = {{ instance.cpus }}
+      {{ instance.name | lower }}.vmx['memsize'] = {{ instance.memory }}
+      {{ instance.name| lower }}.vmx['numvcpus'] = {{ instance.cpus }}
       {% else %}
-      {{ instance.provider | lower }}.memory = {{ instance.memory }}
-      {{ instance.provider | lower }}.cpus = {{ instance.cpus }}
+      {{ instance.name | lower }}.memory = {{ instance.memory }}
+      {{ instance.name | lower }}.cpus = {{ instance.cpus }}
       {% endif %}
 
       {% for option, value in instance.provider_options.items() %}
-      {{ instance.provider | lower }}.{{ option }} = {{ ruby_format(value) }}
+      {{ instance.name | lower }}.{{ option }} = {{ ruby_format(value) }}
       {% endfor %}
 
       {% if instance.provider_raw_config_args is not none %}
         {% for arg in instance.provider_raw_config_args %}
-      {{ instance.provider | lower }}.{{ arg }}
+      {{ instance.name | lower }}.{{ arg }}
         {% endfor %}
       {% endif %}
 
