@@ -4,8 +4,9 @@ set -euxo pipefail
 
 sudo dd if=/dev/zero of=/swap.img bs=1024 count=1048576
 sudo chmod 600 /swap.img
-sudo mkswap /swap.img
-sudo swapon /swap.img
+sudo losetup -f /swap.img
+sudo mkswap $(sudo losetup --associated /swap.img|sed 's,:.*,,')
+sudo swapon $(sudo losetup --associated /swap.img|sed 's,:.*,,')
 
 # Platforms coverage:
 # Fedora 30 : has vagrant-libvirt no compilation needed
