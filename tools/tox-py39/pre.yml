@@ -1,8 +1,17 @@
 ---
 - hosts: all
   tasks:
-    - name: Ensure python3.9 is present
+    - name: Ensure python3.9 is present (Debian/Ubuntu)
       become: true
       package:
-        name: python
+        name: python3.9-devel
         state: present
+      when: ansible_os_family != "RedHat"
+    - name: Ensure python3.9 is present (Red Hat)
+      become: true
+      package:
+        name:
+          - python3.9
+          - gcc
+        state: present
+      when: ansible_os_family == "RedHat"
