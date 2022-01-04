@@ -130,8 +130,8 @@ Here's a full example with the libvirt provider:
 .. _`fedora/32-cloud-base`: https://app.vagrantup.com/fedora/boxes/32-cloud-base
 
 
-More examples may be found in the ``molecule`` directory.
-They're the scenarii used by the CI.
+More examples may be found in the ``molecule`` `scenarios directory`_.
+They're the scenarios used by the CI.
 
 
 .. _get-involved:
@@ -151,7 +151,7 @@ Get Involved
 .. _`wiki`: https://github.com/ansible/community/wiki/Molecule
 .. _`ansible-announce list`: https://groups.google.com/group/ansible-announce
 .. _`communication page`: https://docs.ansible.com/ansible/latest/community/communication.html
-
+.. _`scenarios directory`: https://github.com/ansible-community/molecule-vagrant/tree/main/molecule_vagrant/test/scenarios/molecule
 .. _authors:
 
 Authors
