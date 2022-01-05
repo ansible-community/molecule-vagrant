@@ -9,7 +9,6 @@ platforms:
   - name: instance
     provider_options:
       nic_model_type: e1000
-      driver: ${VIRT_DRIVER:-kvm}
     box: ${TESTBOX:-centos/7}
 provisioner:
   name: ansible

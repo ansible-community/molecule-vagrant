@@ -17,7 +17,6 @@ platforms:
     memory: 256
     cpus: 1
     provider_options:
-      driver: ${VIRT_DRIVER:-kvm}
       # using session with network leads to troubles
       qemu_use_session: false
     config_options:
@@ -35,7 +34,6 @@ platforms:
     memory: 256
     cpus: 2
     provider_options:
-      driver: ${VIRT_DRIVER:-kvm}
       # using session with network leads to troubles
       qemu_use_session: false
     instance_raw_config_args:

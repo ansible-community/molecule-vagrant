@@ -21,6 +21,7 @@
 
 import pytest
 import os
+import vagrant
 
 from molecule import util
 from molecule import logger
@@ -53,10 +54,10 @@ def test_command_init_scenario(temp_dir):
         env = os.environ
         if "TESTBOX" in env:
             conf["platforms"][0]["box"] = env["TESTBOX"]
-        if not os.path.exists("/dev/kvm"):
+        if "vagrant-libvirt" in list(
+            map(lambda x: x.name, vagrant.Vagrant().plugin_list())
+        ):
             conf["driver"]["provider"] = {"name": "libvirt"}
-            for p in conf["platforms"]:
-                p["provider_options"] = {"driver": '"qemu"'}
         util.write_file(confpath, util.safe_dump(conf))
 
         cmd = ["molecule", "--debug", "test", "-s", "test-scenario"]
@@ -77,10 +78,6 @@ def test_command_init_scenario(temp_dir):
 )
 def test_vagrant_root(temp_dir, scenario):
 
-    env = os.environ
-    if not os.path.exists("/dev/kvm"):
-        env.update({"VIRT_DRIVER": "'qemu'"})
-
     scenario_directory = os.path.join(
         os.path.dirname(util.abs_path(__file__)), os.path.pardir, "scenarios"
     )
@@ -92,10 +89,6 @@ def test_vagrant_root(temp_dir, scenario):
 
 
 def test_multi_node(temp_dir):
-
-    env = os.environ
-    if not os.path.exists("/dev/kvm"):
-        env.update({"VIRT_DRIVER": "'qemu'"})
 
     scenario_directory = os.path.join(
         os.path.dirname(util.abs_path(__file__)), os.path.pardir, "scenarios"

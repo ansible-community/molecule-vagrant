@@ -285,7 +285,14 @@ Vagrant.configure('2') do |config|
       {% endif %}
       {% endif %}
       {% if instance.provider == 'libvirt' %}
+        {% if no_kvm is sameas true and 'driver' not in instance.provider_options %}
+      libvirt.driver='qemu'
+        {% endif %}
+        {% set libvirt_use_qemu = no_kvm %}
         {% if 'driver' in instance.provider_options and 'qemu' in instance.provider_options['driver'] %}
+          {% set libvirt_use_qemu = true %}
+        {% endif %}
+        {% if libvirt_use_qemu is sameas true %}
           {% if 'cpu_mode' not in instance.provider_options %}
       # When using qemu instead of kvm, some libvirt systems
       # will use EPYC as vCPU model inside the new VM.
@@ -543,6 +550,7 @@ class VagrantClient(object):
             VAGRANTFILE_TEMPLATE,
             instances=instances,
             cachier=self.cachier,
+            no_kvm=not os.path.exists("/dev/kvm"),
         )
         molecule.util.write_file(self._vagrantfile, template)
 
