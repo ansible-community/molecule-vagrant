@@ -48,9 +48,12 @@ sudo virt-host-validate qemu || true
 # Install Vagrant using their questionable practices, see locked ticket:
 # https://github.com/hashicorp/vagrant/issues/11070
 
+# 2.2.10 minimum otherwise setting config.vm.hostname won't work correctly with alpine boxes.
+VAGRANT_VERSION=2.2.19
+
 which vagrant || \
     sudo $PKG_CMD install -y vagrant-libvirt || {
-        sudo $PKG_CMD install -y https://releases.hashicorp.com/vagrant/2.2.10/vagrant_2.2.10_x86_64.rpm
+        sudo $PKG_CMD install -y https://releases.hashicorp.com/vagrant/${VAGRANT_VERSION}/vagrant_${VAGRANT_VERSION}_x86_64.rpm
     }
 
 if [ -f /etc/os-release ]; then
@@ -61,8 +64,8 @@ if [ -f /etc/os-release ]; then
                 18.04)
                     # ubuntu xenial vagrant is too old so it doesn't support triggers, used by the alpine box
                     sudo apt-get remove --purge -y vagrant
-                    wget --no-show-progress https://releases.hashicorp.com/vagrant/2.2.9/vagrant_2.2.9_x86_64.deb
-                    sudo dpkg -i vagrant_2.2.9_x86_64.deb
+                    wget --no-show-progress https://releases.hashicorp.com/vagrant/${VAGRANT_VERSION}/vagrant_${VAGRANT_VERSION}_x86_64.deb
+                    sudo dpkg -i vagrant_${VAGRANT_VERSION}_x86_64.deb
                     ;;
                 *)
                     ;;
