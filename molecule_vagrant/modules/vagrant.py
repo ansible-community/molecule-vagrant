@@ -255,7 +255,10 @@ Vagrant.configure('2') do |config|
     # Provider
     ##
     c.vm.provider "{{ instance.provider }}" do |{{ instance.provider | lower }}, override|
-      {% if instance.provider.startswith('vmware_') %}
+      {% if instance.provider == "vsphere" %}
+      {{ instance.provider | lower }}.memory_mb = {{ instance.memory }}
+      {{ instance.provider | lower }}.cpu_count = {{ instance.cpus }}
+      {% elif instance.provider.startswith('vmware_') %}
       {{ instance.provider | lower }}.vmx['memsize'] = {{ instance.memory }}
       {{ instance.provider | lower }}.vmx['numvcpus'] = {{ instance.cpus }}
       {% else %}
