@@ -5,6 +5,6 @@
     - network
   tasks:
     - name: Check that there are 3 interfaces
-      assert:
+      ansible.builtin.assert:
         that:
           - "{{ ansible_interfaces | length == 3 }}"

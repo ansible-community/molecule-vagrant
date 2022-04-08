@@ -4,7 +4,7 @@
   gather_facts: false
   tasks:
     - name: Bootstrap python for Ansible
-      raw: |
+      ansible.builtin.raw: |
         command -v python3 python || (
         command -v apk >/dev/null && sudo apk add --no-progress --update python3 ||
         (test -e /usr/bin/dnf && sudo dnf install -y python3) ||

@@ -5,7 +5,7 @@
   become: true
   tasks:
     - name: ping instance-2  # noqa 305
-      shell:
+      ansible.builtin.shell:
         cmd: ping -c3 192.168.56.3
         warn: false
       changed_when: false
@@ -16,7 +16,7 @@
   become: true
   tasks:
     - name: ping instance-1  # noqa 305
-      shell:
+      ansible.builtin.shell:
         cmd: ping -c3 192.168.56.2
         warn: false
       changed_when: false
