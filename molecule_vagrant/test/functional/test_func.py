@@ -65,6 +65,20 @@ def test_command_init_scenario(temp_dir):
         assert result.returncode == 0
 
 
+def test_invalide_settings(temp_dir):
+
+    scenario_directory = os.path.join(
+        os.path.dirname(util.abs_path(__file__)), os.path.pardir, "scenarios"
+    )
+
+    with change_dir_to(scenario_directory):
+        cmd = ["molecule", "create", "--scenario-name", "invalid"]
+        result = run_command(cmd)
+        assert result.returncode == 2
+
+        assert "Failed to validate generated Vagrantfile" in result.stdout
+
+
 @pytest.mark.parametrize(
     "scenario",
     [
