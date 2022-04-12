@@ -53,7 +53,9 @@ jobs:
         if: ${{ ! matrix.skip_vagrant }}
 
       - name: Check out src from Git
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # needed by setuptools-scm
 
       - name: Enable vagrant box caching
         uses: actions/cache@v2
