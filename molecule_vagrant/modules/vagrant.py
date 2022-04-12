@@ -559,15 +559,11 @@ class VagrantClient(object):
 
     def _write_configs(self):
         self._write_vagrantfile()
-        valid = subprocess.run(
-            ["vagrant", "validate"],
-            cwd=self._config["workdir"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        if valid.returncode != 0:
+        try:
+            self._vagrant.validate(self._config["workdir"])
+        except subprocess.CalledProcessError as e:
             self._module.fail_json(
-                msg="Failed to validate generated Vagrantfile: {}".format(valid.stderr)
+                msg=f"Failed to validate generated Vagrantfile: {e.stderr}"
             )
 
     def _get_vagrant(self):
