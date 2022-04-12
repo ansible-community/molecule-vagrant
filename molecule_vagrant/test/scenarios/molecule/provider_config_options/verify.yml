@@ -5,10 +5,10 @@
     - network
   tasks:
     - name: Set interface dict name
-      set_fact:
+      ansible.builtin.set_fact:
         iface: "{{ ansible_default_ipv4.interface }}"
 
     - name: Check network card pci infos
-      assert:
+      ansible.builtin.assert:
         that:
           - "ansible_facts[iface].module == 'e1000'"

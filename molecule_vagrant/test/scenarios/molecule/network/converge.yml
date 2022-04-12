@@ -5,7 +5,7 @@
   become: true
   tasks:
     - name: sample task  # noqa 305
-      shell:
+      ansible.builtin.shell:
         cmd: uname
         warn: false
       changed_when: false
