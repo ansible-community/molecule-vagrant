@@ -47,8 +47,8 @@ create PRs that fix untested platform, as long they do not break existing ones.
 .. _`11020`: https://github.com/hashicorp/vagrant/issues/11020
 
 
-Documentation
-=============
+Examples
+========
 
 To use this plugin, you'll need to set the ``driver`` and ``platform``
 variables in your ``molecule.yml``. Here's a simple example using the
@@ -132,6 +132,269 @@ Here's a full example with the libvirt provider:
 
 More examples may be found in the ``molecule`` `scenarios directory`_.
 They're the scenarios used by the CI.
+
+
+Instance definition
+===================
+
+Instances are defined with the ``platforms`` list. Each member of this list
+is a dictionary defining the instance parameters, which will be used to
+write a ``Vagrantfile``.
+
+Simple options
+--------------
+
+Most of the options are mapping directly to the ``Vagrantfile`` configuration
+line and have intuitive names:
+
+- ``name``: name of the instance
+- ``memory``: memory in MB (defaults to 512MB)
+- ``cpus``: number of vcpus (defaults to 2)
+- ``box``, ``box_version``, ``box_url``, ``box_download_checksum``,
+  ``box_download_checksum_type``: definition of the box to use.
+  They directly map to the option of the same name in ``config.vm``
+- ``hostname``: host name of the machine. By default, use the instance name.
+
+For more details, see `machine settings`_
+
+.. _`machine settings`: https://www.vagrantup.com/docs/vagrantfile/machine_settings
+
+
+
+Configuration options
+---------------------
+
+The parameters defined with the ``config_options`` key are configuration
+options not already handled in previous section. If the option is complex,
+``instance_raw_config_args`` may be used for that.
+
+*Please note that the option names have to be defined with their namespace*.
+
+One more thing to note is that ``config_options['synced_folder']`` has a
+special meaning. It's not a configuration option of Vagrant. It's only enabling
+or not the `synced folder`_ feature of Vagrant. It does not allow to configure
+this feature. To configure it, the easiest way is to use
+``instance_raw_config_args``.
+
+
+In order to define `config.vm.allow_hosts_modification`_ and
+`config.ssh.remote_user`_, the following definition will be used:
+
+.. code-block:: yaml
+
+   platforms:
+     - name: instance
+       config_options:
+         ssh.remote_user: 'vagrant'
+         vm.allow_hosts_modification: false
+
+
+A more complex example, with:
+
+- an inline shell script for `config.vm.provision`_,
+- `synced folder`_ enabled and configured.
+
+
+.. code-block:: yaml
+
+   platforms:
+     - name: myinstance
+       provision: true
+       config_options:
+         synced_folder: true
+       instance_raw_config_args:
+         - "vm.provision :shell, inline: \"echo hello\""
+         - 'vm.synced_folder ".", "/vagrant", type: "rsync"'
+
+
+These examples will translate into the following ``Vagrantfile``:
+
+.. code-block:: ruby
+
+    Vagrant.configure('2') do |config|
+      ...
+      config.vm.define "myinstance" do |c|
+        ...
+        c.ssh.remote_user: "vagrant"
+        c.vm.allow_hosts_modification: false
+        ...
+        c.vm.provision :shell, inline: "echo hello"
+        c.vm.synced_folder ".", "/vagrant", type: "rsync"
+        ...
+      end
+    end
+
+
+.. _`synced folder`: https://www.vagrantup.com/docs/synced-folders/basic_usage
+.. _`config.vm.allow_hosts_modification`: https://www.vagrantup.com/docs/vagrantfile/machine_settings#config-vm-allow_hosts_modification
+.. _`config.ssh.remote_user`: https://www.vagrantup.com/docs/vagrantfile/ssh_settings#config-ssh-remote_user
+.. _`config.vm.provision`: https://www.vagrantup.com/docs/vagrantfile/machine_settings#config-vm-provision
+
+
+Provider options
+----------------
+
+The parameters defined with the ``provider_options`` key are options used to
+configure the provider. As for ``config_options``, there's a
+``provider_raw_config_args`` key for complex values. Additionally, it's
+possible to configure `provider overrides`_ with ``provider_override_args``.
+
+
+Example of provider options for vagrant-libvirt (`Reference vagrant-libvirt`_):
+
+.. code-block:: yaml
+
+   platforms:
+     - name: myinstance
+       provider_options:
+         qemu_use_session: false
+       provider_raw_config_args:
+         - "storage :file, :type => 'qcow2', :device => 'vdb', :size => '1G'"
+
+
+Resulting ``Vagrantfile``:
+
+.. code-block:: ruby
+
+    Vagrant.configure('2') do |config|
+      ...
+      config.vm.define "myinstance" do |c|
+        ...
+        c.vm.provider "libvirt" do |libvirt, override|
+          ...
+          libvirt.qemu_use_session: false
+          libvirt.storage :file, :type => 'qcow2', :device => 'vdb', :size => '20G'
+          ...
+        end
+        ...
+      end
+    end
+
+Example of provider options for virtualbox
+(`Reference virtualbox configuration`_, `Reference virtualbox customizations`_):
+
+.. code-block:: yaml
+
+   platforms:
+     - name: myinstance
+       provider_options:
+         default_nic_type: 82543GC
+       provider_raw_config_args:
+         - "customize ['createmedium', 'disk', '--filename', 'machine1_disk0', '--size', '8196']"
+         - "customize ['createmedium', 'disk', '--filename', 'machine1_disk1', '--size', '8196']"
+         - "customize ['storageattach', :id, '--storagectl', 'SATA Controller','--port', '1', '--type', 'hdd', '--medium', 'machine1_disk0.vdi']"
+         - "customize ['storageattach', :id, '--storagectl', 'SATA Controller','--port', '2', '--type', 'hdd', '--medium', 'machine1_disk1.vdi']"
+
+
+Resulting ``Vagrantfile``:
+
+.. code-block:: ruby
+
+    Vagrant.configure('2') do |config|
+      ...
+      config.vm.define "myinstance" do |c|
+        ...
+        c.vm.provider "virtualbox" do |virtualbox, override|
+          ...
+          virtualbox.default_nic_type = "82543GC"
+          virtualbox.customize ['createmedium', 'disk', '--filename', 'machine1_disk0', '--size', '8196']
+          virtualbox.customize ['createmedium', 'disk', '--filename', 'machine1_disk1', '--size', '8196']
+          virtualbox.customize ['storageattach', :id, '--storagectl', 'SATA Controller','--port', '1', '--type', 'hdd', '--medium', 'machine1_disk0.vdi']
+          virtualbox.customize ['storageattach', :id, '--storagectl', 'SATA Controller','--port', '2', '--type', 'hdd', '--medium', 'machine1_disk1.vdi']
+          ...
+        end
+        ...
+      end
+    end
+
+The two disk examples are taken from `bug 127`_ .
+
+Example of override:
+
+.. code-block:: yaml
+
+   platforms:
+     - name: myinstance
+       box: fedora/32-cloud-base
+       provider_override_args:
+         - 'vm.box = "bionic64"'
+
+
+Resulting ``Vagrantfile``:
+
+.. code-block:: ruby
+
+    Vagrant.configure('2') do |config|
+      ...
+      config.vm.define "myinstance" do |c|
+        ...
+        c.vm.box = "fedora/32-cloud-base"
+        ...
+        c.vm.provider "virtualbox" do |virtualbox, override|
+          ...
+          override.vm.box = "bionic64"
+          ...
+        end
+        ...
+      end
+    end
+
+
+
+.. _`provider overrides`: https://www.vagrantup.com/docs/providers/configuration#overriding-configuration
+.. _`Reference vagrant-libvirt`: https://github.com/vagrant-libvirt/vagrant-libvirt
+.. _`Reference virtualbox configuration`: https://www.vagrantup.com/docs/providers/virtualbox/configuration#default-nic-type
+.. _`Reference virtualbox customizations`: https://www.vagrantup.com/docs/providers/virtualbox/configuration#vboxmanage-customizations
+.. _`bug 127`: https://github.com/ansible-community/molecule-vagrant/issues/127
+
+Specific provider notes
+-----------------------
+
+While molecule-vagrant tries to be as generic as possible, there are things
+to take into account:
+
+- If the `linked_clone`_ is not set in ``provider_options`` for the virtualbox
+  provider, it will defaults to true.
+- When using vagrant-libvirt, if either ``/dev/kvm`` does not exists or
+  ``provider_options['driver']`` is set to ``qemu``, it will set the cpu model
+  to ``qemu64`` to workaround troubles with ``ssh-keygen`` on some OS. It can
+  be overridden either by setting ``provider_options['driver']`` not to
+  ``qemu`` or by setting ``provider_options['cpu_mode']`` and
+  ``provider_options['cpu_model']``.
+
+
+.. _`linked_clone`: https://www.vagrantup.com/docs/providers/virtualbox/configuration#linked-clones
+
+Networking
+----------
+
+The networking of the instance is defined with the ``interfaces`` key. It's
+content is a list defining the network name/type with ``network_name`` and its
+options.
+
+For instance (See `vagrant networking`_ for details):
+
+.. code-block:: yaml
+
+    interfaces:
+      - network_name: private_network
+        auto_config: true
+        type: dhcp
+      - network_name: private_network
+        ip: 192.168.123.3
+      - network_name: forwarded_port
+        guest: 80
+        host: 8080
+
+gives:
+
+.. code-block:: ruby
+
+   c.vm.network "private_network", auto_config: true, type: "dhcp"
+   c.vm.network "private_network", ip: "192.168.123.3"
+   c.vm.network "forwarded_port", guest: 80, host: 8080
+
+.. _`vagrant networking`: https://www.vagrantup.com/docs/networking
 
 
 .. _get-involved:
