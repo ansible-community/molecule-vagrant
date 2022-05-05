@@ -343,6 +343,7 @@ stderr:
 class VagrantClient(object):
     def __init__(self, module):
         self._module = module
+        self.provider = self._module.params["provider_name"]
         self.provision = self._module.params["provision"]
         self.cachier = self._module.params["cachier"]
 
@@ -434,9 +435,10 @@ class VagrantClient(object):
         changed = False
         if self._running() != len(self.instances):
             changed = True
+            provider = self.provider
             provision = self.provision
             try:
-                self._vagrant.up(provision=provision)
+                self._vagrant.up(provider=provider, provision=provision)
             except Exception:
                 # NOTE(retr0h): Ignore the exception since python-vagrant
                 # passes the actual error as a no-argument ContextManager.
