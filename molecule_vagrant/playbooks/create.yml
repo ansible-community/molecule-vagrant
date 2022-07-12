@@ -22,7 +22,8 @@
 
     # Mandatory configuration for Molecule to function.
 
-    - when: server.changed | bool
+    - name: Create molecule instances configuration
+      when: server is changed  # noqa no-handler
       block:
 
         - name: Populate instance config dict
