@@ -88,6 +88,7 @@ def test_invalide_settings(temp_dir):
         ("default"),
         ("default-compat"),
         ("network"),
+        ("hostname"),
     ],
 )
 def test_vagrant_root(temp_dir, scenario):

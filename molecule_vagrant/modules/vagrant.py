@@ -235,7 +235,13 @@ Vagrant.configure('2') do |config|
     {% if k not in ['synced_folder', 'cachier'] %}c.{{ k }} = {{ ruby_format(v) }}{% endif %}
     {% endfor %}
 
+    {% if instance.hostname is boolean and instance.hostname is sameas false %}
+    # c.vm.hostname not set
+    {% elif instance.hostname is string %}
+    c.vm.hostname = "{{ instance.hostname }}"
+    {% else %}
     c.vm.hostname = "{{ instance.name }}"
+    {% endif %}
 
     ##
     # Network
@@ -606,6 +612,7 @@ class VagrantClient(object):
             )
         d = {
             "name": instance.get("name"),
+            "hostname": instance.get("hostname", instance.get("name")),
             "memory": instance.get("memory", 512),
             "cpus": instance.get("cpus", 2),
             "networks": networks,

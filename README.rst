@@ -91,6 +91,10 @@ Here's a full example with the libvirt provider:
 
    platforms:
      - name: instance
+       # If specified, set host name to hostname, unless it's set to False and
+       # the host name won't be set. In all other cases (including default) use
+       # 'name' as host name.
+       hostname: foo.bar.com
        # List of dictionaries mapped to `config.vm.network`
        interfaces:
          # `network_name` is the required identifier, all other keys map to
