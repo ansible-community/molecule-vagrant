@@ -31,13 +31,13 @@ repos:
       - id: black
         language_version: python3
   - repo: https://github.com/PyCQA/flake8
-    rev: 5.0.2
+    rev: 5.0.4
     hooks:
       - id: flake8
         additional_dependencies:
           - flake8-black
   - repo: https://github.com/codespell-project/codespell.git
-    rev: v2.1.0
+    rev: v2.2.1
     hooks:
       - id: codespell
         name: codespell
@@ -68,7 +68,7 @@ repos:
         #       use jinja templating, this will often fail and the syntax
         #       error will be discovered in execution anyway)
   - repo: https://github.com/ansible/ansible-lint.git
-    rev: v6.4.0
+    rev: v6.5.0
     hooks:
       - id: ansible-lint
         always_run: true
