@@ -68,7 +68,7 @@ repos:
         #       use jinja templating, this will often fail and the syntax
         #       error will be discovered in execution anyway)
   - repo: https://github.com/ansible/ansible-lint.git
-    rev: v6.5.0
+    rev: v6.5.1
     hooks:
       - id: ansible-lint
         always_run: true
