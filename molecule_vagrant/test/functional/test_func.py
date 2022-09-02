@@ -79,6 +79,20 @@ def test_invalide_settings(temp_dir):
         assert "Failed to validate generated Vagrantfile" in result.stdout
 
 
+def test_provider_force(temp_dir):
+
+    scenario_directory = os.path.join(
+        os.path.dirname(util.abs_path(__file__)), os.path.pardir, "scenarios"
+    )
+
+    with change_dir_to(scenario_directory):
+        cmd = ["molecule", "create", "--scenario-name", "provider_force"]
+        result = run_command(cmd)
+        assert result.returncode == 2
+
+        assert "The provider 'vmware' could not be found" in result.stdout
+
+
 @pytest.mark.parametrize(
     "scenario",
     [

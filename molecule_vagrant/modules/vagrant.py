@@ -343,6 +343,7 @@ stderr:
 class VagrantClient(object):
     def __init__(self, module):
         self._module = module
+        self.provider = self._module.params["provider_name"]
         self.provision = self._module.params["provision"]
         self.cachier = self._module.params["cachier"]
 
@@ -435,8 +436,12 @@ class VagrantClient(object):
         if self._running() != len(self.instances):
             changed = True
             provision = self.provision
+            provider = self.provider
             try:
-                self._vagrant.up(provision=provision)
+                if self._module.params["provider_force"] is True:
+                    self._vagrant.up(provider=provider, provision=provision)
+                else:
+                    self._vagrant.up(provision=provision)
             except Exception:
                 # NOTE(retr0h): Ignore the exception since python-vagrant
                 # passes the actual error as a no-argument ContextManager.
@@ -629,7 +634,7 @@ class VagrantClient(object):
             "box_url": instance.get("box_url"),
             "box_download_checksum": checksum,
             "box_download_checksum_type": checksum_type,
-            "provider": self._module.params["provider_name"],
+            "provider": self.provider,
             "provider_options": {},
             "provider_raw_config_args": instance.get("provider_raw_config_args", None),
             "provider_override_args": instance.get("provider_override_args", None),
@@ -689,6 +694,7 @@ def main():
             provider_override_args=dict(type="list", default=None),
             provider_raw_config_args=dict(type="list", default=None),
             provider_name=dict(type="str", default="virtualbox"),
+            provider_force=dict(type="bool", default=False),
             default_box=dict(type="str", default=None),
             provision=dict(type="bool", default=False),
             force_stop=dict(type="bool", default=False),

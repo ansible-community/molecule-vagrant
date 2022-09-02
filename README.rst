@@ -75,6 +75,8 @@ Here's a full example with the libvirt provider:
        # Can be any supported provider (virtualbox, parallels, libvirt, etc)
        # Defaults to virtualbox
        name: libvirt
+     # Run vagrant up with --provider
+     force_provider: false
      # Run vagrant up with --provision.
      # Defaults to --no-provision)
      provision: no

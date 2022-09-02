@@ -1,0 +1,12 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: vagrant
+  provider:
+    name: vmware
+  force_provider: true
+platforms:
+  - name: instance
+provisioner:
+  name: ansible

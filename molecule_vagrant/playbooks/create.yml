@@ -10,6 +10,7 @@
         instances: "{{ molecule_yml.platforms }}"
         default_box: "{{ molecule_yml.driver.default_box | default('generic/alpine310') }}"
         provider_name: "{{ molecule_yml.driver.provider.name | default(omit, true) }}"
+        provider_force: "{{ molecule_yml.driver.force_provider | default(omit) }}"
         provision: "{{ molecule_yml.driver.provision | default(omit) }}"
         cachier: "{{ molecule_yml.driver.cachier | default(omit) }}"
         parallel: "{{ molecule_yml.driver.parallel | default(omit) }}"
