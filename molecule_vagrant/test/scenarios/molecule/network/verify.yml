@@ -1,5 +1,6 @@
 ---
-- hosts: all
+- name: Verify
+  hosts: all
   gather_facts: true
   gather_subset:
     - network
