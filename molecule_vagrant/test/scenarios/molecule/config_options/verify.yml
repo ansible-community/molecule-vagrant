@@ -1,5 +1,6 @@
 ---
-- hosts: all
+- name: Verify
+  hosts: all
   tasks:
     - name: Look for /vagrant
       ansible.builtin.stat:

@@ -30,7 +30,7 @@
       ansible.builtin.set_fact:
         instance_conf: {}
 
-    - name: Dump instance config  # noqa 503
+    - name: Dump instance config  # noqa no-handler
       ansible.builtin.copy:
         content: |
           # Molecule managed
