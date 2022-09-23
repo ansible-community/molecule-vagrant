@@ -260,49 +260,50 @@ Vagrant.configure('2') do |config|
     ##
     # Provider
     ##
-    c.vm.provider "{{ instance.provider }}" do |{{ instance.provider | lower }}, override|
-      {% if instance.provider == "vsphere" %}
-      {{ instance.provider | lower }}.memory_mb = {{ instance.memory }}
-      {{ instance.provider | lower }}.cpu_count = {{ instance.cpus }}
-      {% elif instance.provider.startswith('vmware_') %}
-      {{ instance.provider | lower }}.vmx['memsize'] = {{ instance.memory }}
-      {{ instance.provider | lower }}.vmx['numvcpus'] = {{ instance.cpus }}
+    {% for provider,opts in instance.providers_options.items() %}
+    c.vm.provider "{{ provider }}" do |{{ provider | lower }}, override|
+      {% if provider == "vsphere" %}
+      {{ provider | lower }}.memory_mb = {{ instance.memory }}
+      {{ provider | lower }}.cpu_count = {{ instance.cpus }}
+      {% elif provider.startswith('vmware_') %}
+      {{ provider | lower }}.vmx['memsize'] = {{ instance.memory }}
+      {{ provider | lower }}.vmx['numvcpus'] = {{ instance.cpus }}
       {% else %}
-      {{ instance.provider | lower }}.memory = {{ instance.memory }}
-      {{ instance.provider | lower }}.cpus = {{ instance.cpus }}
+      {{ provider | lower }}.memory = {{ instance.memory }}
+      {{ provider | lower }}.cpus = {{ instance.cpus }}
       {% endif %}
 
-      {% for option, value in instance.provider_options.items() %}
-      {{ instance.provider | lower }}.{{ option }} = {{ ruby_format(value) }}
+      {% for option, value in opts["options"].items() %}
+      {{ provider | lower }}.{{ option }} = {{ ruby_format(value) }}
       {% endfor %}
 
-      {% if instance.provider_raw_config_args is not none %}
-        {% for arg in instance.provider_raw_config_args %}
-      {{ instance.provider | lower }}.{{ arg }}
+      {% if opts["raw_config_args"] is not none %}
+        {% for arg in opts["raw_config_args"] %}
+      {{ provider | lower }}.{{ arg }}
         {% endfor %}
       {% endif %}
 
-      {% if instance.provider_override_args is not none %}
-        {% for arg in instance.provider_override_args -%}
+      {% if opts["override_args"] is not none %}
+        {% for arg in opts["override_args"] -%}
       override.{{ arg }}
         {% endfor %}
       {% endif %}
 
-      {% if instance.provider == 'virtualbox' %}
-      {% if 'linked_clone' not in instance.provider_options %}
+      {% if provider == 'virtualbox' %}
+      {% if 'linked_clone' not in opts["options"] %}
       virtualbox.linked_clone = true
       {% endif %}
       {% endif %}
-      {% if instance.provider == 'libvirt' %}
-        {% if no_kvm is sameas true and 'driver' not in instance.provider_options %}
+      {% if provider == 'libvirt' %}
+        {% if no_kvm is sameas true and 'driver' not in opts["options"] %}
       libvirt.driver='qemu'
         {% endif %}
         {% set libvirt_use_qemu = no_kvm %}
-        {% if 'driver' in instance.provider_options and 'qemu' in instance.provider_options['driver'] %}
+        {% if 'driver' in opts["options"] and 'qemu' in opts["options"]['driver'] %}
           {% set libvirt_use_qemu = true %}
         {% endif %}
         {% if libvirt_use_qemu is sameas true %}
-          {% if 'cpu_mode' not in instance.provider_options %}
+          {% if 'cpu_mode' not in opts["options"] %}
       # When using qemu instead of kvm, some libvirt systems
       # will use EPYC as vCPU model inside the new VM.
       # This will lead to process hang with ssh-keygen -A on alpine.
@@ -315,6 +316,7 @@ Vagrant.configure('2') do |config|
         {% endif %}
       {% endif %}
     end
+    {% endfor %}
   end
 {% endfor %}
 end
@@ -345,6 +347,7 @@ class VagrantClient(object):
         self._module = module
         self.provision = self._module.params["provision"]
         self.cachier = self._module.params["cachier"]
+        self.provider_name = self._module.params["provider_name"]
 
         # compat
         if self._module.params["instance_name"] is not None:
@@ -624,15 +627,12 @@ class VagrantClient(object):
                 "synced_folder": False,
                 "ssh.insert_key": True,
             },
+            "providers_options": {},
             "box": instance.get("box", self._module.params["default_box"]),
             "box_version": instance.get("box_version"),
             "box_url": instance.get("box_url"),
             "box_download_checksum": checksum,
             "box_download_checksum_type": checksum_type,
-            "provider": self._module.params["provider_name"],
-            "provider_options": {},
-            "provider_raw_config_args": instance.get("provider_raw_config_args", None),
-            "provider_override_args": instance.get("provider_override_args", None),
         }
 
         d["config_options"].update(
@@ -646,11 +646,25 @@ class VagrantClient(object):
                 "Please convert your molecule.yml to move cachier parameter to driver:. Compat layer will be removed later."
             )
 
-        d["provider_options"].update(
-            molecule.util.merge_dicts(
-                d["provider_options"], instance.get("provider_options", {})
+        providers_options = instance.get("providers_options", {})
+        for prov in [self.provider_name] + list(providers_options.keys()):
+            d["providers_options"][prov] = {
+                "options": {},
+                "raw_config_args": instance.get("provider_raw_config_args", None),
+                "override_args": instance.get("provider_override_args", None),
+            }
+            d["providers_options"][prov]["options"] = molecule.util.merge_dicts(
+                d["providers_options"][prov]["options"],
+                instance.get("provider_options", {}),
             )
-        )
+            if prov in providers_options:
+                opts = providers_options[prov]
+                if len(opts):
+                    d["providers_options"][prov]["options"].update(
+                        molecule.util.merge_dicts(
+                            d["providers_options"][prov]["options"], opts
+                        )
+                    )
 
         return d
 

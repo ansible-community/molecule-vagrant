@@ -85,6 +85,7 @@ def test_invalide_settings(temp_dir):
         ("vagrant_root"),
         ("config_options"),
         ("provider_config_options"),
+        ("provider_config_options2"),
         ("default"),
         ("default-compat"),
         ("network"),
