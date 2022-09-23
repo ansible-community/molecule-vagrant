@@ -4,11 +4,11 @@ dependency:
 driver:
   name: vagrant
   provider:
-    name: libvirt
+    name: virtualbox
 platforms:
   - name: instance
     provider_options:
-      nic_model_type: e1000
+      default_nic_type: "82545EM"
     box: ${TESTBOX:-centos/7}
 provisioner:
   name: ansible

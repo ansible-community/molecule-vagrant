@@ -3,22 +3,22 @@ dependency:
   name: galaxy
 driver:
   name: vagrant
-  provider:
-    name: libvirt
 platforms:
   - name: instance-1
     box: ${TESTBOX:-debian/jessie64}
     interfaces:
       - network_name: private_network
         ip: 192.168.56.2
+        auto_config: true
     groups:
       - foo
       - bar
     memory: 256
     cpus: 1
-    provider_options:
-      # using session with network leads to troubles
-      qemu_use_session: false
+    providers_options:
+      libvirt:
+        # using session with network leads to troubles
+        qemu_use_session: false
     config_options:
       synced_folder: true
     instance_raw_config_args:
@@ -28,14 +28,16 @@ platforms:
     interfaces:
       - network_name: private_network
         ip: 192.168.56.3
+        auto_config: true
     groups:
       - foo
       - baz
     memory: 256
     cpus: 2
-    provider_options:
-      # using session with network leads to troubles
-      qemu_use_session: false
+    providers_options:
+      libvirt:
+        # using session with network leads to troubles
+        qemu_use_session: false
     instance_raw_config_args:
       - 'vm.synced_folder ".", "/vagrant", type: "rsync"'
 provisioner:

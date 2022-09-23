@@ -21,7 +21,6 @@
 
 import pytest
 import os
-import vagrant
 
 from molecule import util
 from molecule import logger
@@ -30,6 +29,21 @@ from molecule.util import run_command
 from molecule.test.conftest import change_dir_to
 
 LOG = logger.get_logger(__name__)
+
+
+def guess_provider():
+    prov = None
+    toolsdir = os.path.join(
+        os.path.dirname(util.abs_path(__file__)),
+        os.path.pardir,
+        os.path.pardir,
+        os.path.pardir,
+        "tools",
+    )
+    result = run_command(["vagrant", "provider"], cwd=toolsdir)
+    if result.returncode == 0:
+        prov = result.stdout.strip()
+    return prov
 
 
 # @pytest.mark.xfail(reason="need to fix template path")
@@ -54,9 +68,8 @@ def test_command_init_scenario(temp_dir):
         env = os.environ
         if "TESTBOX" in env:
             conf["platforms"][0]["box"] = env["TESTBOX"]
-        if "vagrant-libvirt" in list(
-            map(lambda x: x.name, vagrant.Vagrant().plugin_list())
-        ):
+        prov = guess_provider()
+        if prov == "libvirt":
             conf["driver"]["provider"] = {"name": "libvirt"}
         util.write_file(confpath, util.safe_dump(conf))
 
@@ -79,6 +92,28 @@ def test_invalide_settings(temp_dir):
         assert "Failed to validate generated Vagrantfile" in result.stdout
 
 
+def patch_molecule(molecule_yaml):
+
+    conf = util.safe_load_file(molecule_yaml)
+    # if provider name set in the molecule.yml means we do care about
+    # the provider used, so patch the provider
+    if ("provider" in conf["driver"]) and ("name" in conf["driver"]["provider"]):
+        curprov = conf["driver"]["provider"]["name"]
+        newprov = guess_provider()
+        if (newprov is not None) and (curprov != newprov):
+            conf["driver"]["provider"]["name"] = newprov
+            for i in conf["platforms"]:
+                # To specify the nic type, it's default_nic_type in vbox and nic_model_type in libvirt
+                # Same for model name (See provider_config_options scenario)
+                if "provider_options" in i:
+                    if (newprov == "libvirt") and "default_nic_type" in i[
+                        "provider_options"
+                    ]:
+                        i["provider_options"]["nic_model_type"] = "e1000"
+                        del i["provider_options"]["default_nic_type"]
+            util.write_file(molecule_yaml, util.safe_dump(conf))
+
+
 @pytest.mark.parametrize(
     "scenario",
     [
@@ -97,6 +132,9 @@ def test_vagrant_root(temp_dir, scenario):
     scenario_directory = os.path.join(
         os.path.dirname(util.abs_path(__file__)), os.path.pardir, "scenarios"
     )
+
+    confpath = os.path.join(scenario_directory, "molecule", scenario, "molecule.yml")
+    patch_molecule(confpath)
 
     with change_dir_to(scenario_directory):
         cmd = ["molecule", "test", "--scenario-name", scenario]

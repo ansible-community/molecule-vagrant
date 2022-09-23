@@ -3,22 +3,29 @@ dependency:
   name: galaxy
 driver:
   name: vagrant
-  provider:
-    name: libvirt
 platforms:
   - name: instance-1
     box: ${TESTBOX:-debian/jessie64}
     memory: 256
     cpus: 1
+    providers_options:
+      virtualbox: {}
+      libvirt: {}
   - name: instance-2
     hostname: instance.example.com
     box: ${TESTBOX:-debian/jessie64}
     memory: 256
     cpus: 1
+    providers_options:
+      virtualbox: {}
+      libvirt: {}
   - name: instance-3
     hostname: false
     box: ${TESTBOX:-debian/jessie64}
     memory: 256
     cpus: 1
+    providers_options:
+      virtualbox: {}
+      libvirt: {}
 provisioner:
   name: ansible
