@@ -78,18 +78,25 @@ def test_command_init_scenario(temp_dir):
         assert result.returncode == 0
 
 
-def test_invalide_settings(temp_dir):
+@pytest.mark.parametrize(
+    "scenario,check",
+    [
+        ("invalid", "Failed to validate generated Vagrantfile"),
+        ("invalid_provider", "The provider 'vmware' could not be found"),
+    ],
+)
+def test_invalide_settings(temp_dir, scenario, check):
 
     scenario_directory = os.path.join(
         os.path.dirname(util.abs_path(__file__)), os.path.pardir, "scenarios"
     )
 
     with change_dir_to(scenario_directory):
-        cmd = ["molecule", "create", "--scenario-name", "invalid"]
+        cmd = ["molecule", "create", "--scenario-name", scenario]
         result = run_command(cmd)
         assert result.returncode == 2
 
-        assert "Failed to validate generated Vagrantfile" in result.stdout
+        assert check in result.stdout
 
 
 def patch_molecule(molecule_yaml):

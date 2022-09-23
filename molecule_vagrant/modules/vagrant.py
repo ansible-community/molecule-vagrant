@@ -110,8 +110,9 @@ options:
   provider_name:
     description:
       - Name of the Vagrant provider to use.
+      - If not set, let vagrant choose the provider and settings are done for virtualbox.
     required: False
-    default: virtualbox
+    default: None
   provider_memory:
     description:
       - Amount of memory to allocate to the instance.
@@ -348,6 +349,10 @@ class VagrantClient(object):
         self.provision = self._module.params["provision"]
         self.cachier = self._module.params["cachier"]
         self.provider_name = self._module.params["provider_name"]
+        # Keep historic behaviour and use virtualbox as "default".
+        # It's important in order to be able to set vm memory/cpus.
+        if self.provider_name is None:
+            self.provider_name = "virtualbox"
 
         # compat
         if self._module.params["instance_name"] is not None:
@@ -439,7 +444,10 @@ class VagrantClient(object):
             changed = True
             provision = self.provision
             try:
-                self._vagrant.up(provision=provision)
+                if self._module.params["provider_name"] is None:
+                    self._vagrant.up(provision=provision)
+                else:
+                    self._vagrant.up(provider=self.provider_name, provision=provision)
             except Exception:
                 # NOTE(retr0h): Ignore the exception since python-vagrant
                 # passes the actual error as a no-argument ContextManager.
@@ -702,7 +710,7 @@ def main():
             provider_options=dict(type="dict", default={}),
             provider_override_args=dict(type="list", default=None),
             provider_raw_config_args=dict(type="list", default=None),
-            provider_name=dict(type="str", default="virtualbox"),
+            provider_name=dict(type="str", default=None),
             default_box=dict(type="str", default=None),
             provision=dict(type="bool", default=False),
             force_stop=dict(type="bool", default=False),
