@@ -37,7 +37,7 @@ repos:
         additional_dependencies:
           - flake8-black
   - repo: https://github.com/codespell-project/codespell.git
-    rev: v2.2.1
+    rev: v2.2.2
     hooks:
       - id: codespell
         name: codespell
@@ -68,7 +68,7 @@ repos:
         #       use jinja templating, this will often fail and the syntax
         #       error will be discovered in execution anyway)
   - repo: https://github.com/ansible/ansible-lint.git
-    rev: v6.8.0
+    rev: v6.8.2
     hooks:
       - id: ansible-lint
         always_run: true
