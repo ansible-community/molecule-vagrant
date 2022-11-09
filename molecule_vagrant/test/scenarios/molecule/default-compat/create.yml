@@ -13,7 +13,7 @@
 
         config_options: "{{ item.config_options | default(omit) }}"
 
-        platform_box: "{{ item.box | default('generic/alpine310') }}"
+        platform_box: "{{ item.box | default('generic/alpine316') }}"
         platform_box_version: "{{ item.box_version | default(omit) }}"
         platform_box_url: "{{ item.box_url | default(omit) }}"
 

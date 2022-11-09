@@ -86,8 +86,8 @@ Here's a full example with the libvirt provider:
      # Defaults to true
      parallel: true
      # vagrant box to use by default
-     # Defaults to 'generic/alpine310'
-     default_box: 'generic/alpine310'
+     # Defaults to 'generic/alpine316'
+     default_box: 'generic/alpine316'
 
    platforms:
      - name: instance
