@@ -13,7 +13,8 @@
           - workdir.stat.exists | bool
 
     - name: Get /tmp/workdir file content
-      ansible.builtin.command: cat /tmp/workdir
+      ansible.builtin.command:
+        cmd: cat /tmp/workdir
       changed_when: false
       register: workdir_content
 
