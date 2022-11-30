@@ -5,8 +5,8 @@ set -euxo pipefail
 sudo dd if=/dev/zero of=/swap.img bs=1024 count=1048576
 sudo chmod 600 /swap.img
 sudo losetup -f /swap.img
-sudo mkswap $(sudo losetup --associated /swap.img|sed 's,:.*,,')
-sudo swapon $(sudo losetup --associated /swap.img|sed 's,:.*,,')
+sudo mkswap "$(sudo losetup --associated /swap.img|sed 's,:.*,,')"
+sudo swapon "$(sudo losetup --associated /swap.img|sed 's,:.*,,')"
 
 # Platforms coverage:
 # Fedora 30 : has vagrant-libvirt no compilation needed
@@ -22,7 +22,7 @@ command -v python3 python
 PYTHON=$(command -v python3 python|head -n1)
 PKG_CMD=$(command -v dnf yum apt-get|head -n1)
 
-sudo $PYTHON -m pip install -U tox
+sudo "${PYTHON}" -m pip install -U tox
 
 # === LIBVIRT SETUP ===
 sudo systemctl enable --now libvirtd
@@ -52,8 +52,8 @@ sudo virt-host-validate qemu || true
 VAGRANT_VERSION=2.2.19
 
 which vagrant || \
-    sudo $PKG_CMD install -y vagrant-libvirt || {
-        sudo $PKG_CMD install -y https://releases.hashicorp.com/vagrant/${VAGRANT_VERSION}/vagrant_${VAGRANT_VERSION}_x86_64.rpm
+    sudo "${PKG_CMD}" install -y vagrant-libvirt || {
+        sudo "${PKG_CMD}" install -y https://releases.hashicorp.com/vagrant/${VAGRANT_VERSION}/vagrant_${VAGRANT_VERSION}_x86_64.rpm
     }
 
 if [ -f /etc/os-release ]; then
@@ -75,7 +75,7 @@ if [ -f /etc/os-release ]; then
             case "$VERSION_ID" in
                 31)
                     # https://bugzilla.redhat.com/show_bug.cgi?id=1839651
-                    sudo $PKG_CMD upgrade -y --enablerepo=updates-testing --advisory=FEDORA-2020-09c472786c
+                    sudo "${PKG_CMD}" upgrade -y --enablerepo=updates-testing --advisory=FEDORA-2020-09c472786c
                     ;;
                 *)
                     ;;
@@ -85,7 +85,7 @@ if [ -f /etc/os-release ]; then
             # https://github.com/hashicorp/vagrant/issues/11020
             if grep -qi '^CentOS Linux release 8.2.*' /etc/centos-release ; then
                 # https://bugs.centos.org/view.php?id=17120
-                relver="$(cat /etc/centos-release | awk '{print $4}')"
+                relver="$(grep -v '^#' /etc/centos-release | awk '{print $4}')"
                 sudo sed -i /etc/yum.repos.d/CentOS-Sources.repo -e 's,$contentdir/,,g'
                 sudo sed -i /etc/yum.repos.d/CentOS-Sources.repo -e "s,\$releasever,$relver,g"
 
@@ -130,7 +130,7 @@ vagrant plugin list | grep vagrant-libvirt || {
 
 if [ -f /etc/debian_version ]; then
     dpkg -l | grep libselinux
-    [ -x /usr/bin/aa-enabled ] && echo "Apparmor: `/usr/bin/aa-enabled`"
+    [ -x /usr/bin/aa-enabled ] && echo "Apparmor: $(/usr/bin/aa-enabled)"
 else
     rpm -qa | grep libselinux
 fi
