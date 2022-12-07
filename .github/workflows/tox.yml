@@ -69,10 +69,12 @@ jobs:
 
       - name: Install a default Python
         uses: actions/setup-python@v4
+        cache: 'pip'
 
       # Be sure to install the version of python needed by a specific test, if necessary
       - name: Set up Python version
         uses: actions/setup-python@v4
+        cache: 'pip'
         if: ${{ matrix.python_version }}
         with:
           python-version: ${{ matrix.python_version }}
