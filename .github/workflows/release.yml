@@ -20,7 +20,6 @@ jobs:
     - name: Switch to using Python 3.8 by default
       uses: actions/setup-python@v4
       with:
-        cache: 'pip'
         python-version: 3.8
     - name: Install tox
       run: >-
