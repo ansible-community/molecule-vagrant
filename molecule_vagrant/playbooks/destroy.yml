@@ -5,7 +5,7 @@
   gather_facts: false
   no_log: "{{ molecule_no_log }}"
   tasks:
-    - name: Destroy molecule instance(s)
+    - name: Destroy molecule instance(s)  # noqa fqcn[action]
       vagrant:
         instances: "{{ molecule_yml.platforms }}"
         default_box: "{{ molecule_yml.driver.default_box | default('generic/alpine316') }}"
