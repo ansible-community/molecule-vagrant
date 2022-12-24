@@ -14,41 +14,47 @@ on:
   schedule:
     - cron: 1 0 * * *  # Run daily at 0:01 UTC
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
 jobs:
+  pre:
+    name: pre
+    runs-on: ubuntu-22.04
+    outputs:
+      matrix: ${{ steps.generate_matrix.outputs.matrix }}
+    steps:
+      - name: Determine matrix
+        id: generate_matrix
+        uses: coactions/matrix@main
+        with:
+          min_python: "3.9"
+          platforms: macos
+          other_names: |
+            lint,packaging
+            py-devel
   build:
-    name: ${{ matrix.tox_env }}
+    name: ${{ matrix.passed_name }}
     # macos is the only gh action platform with support for vagrant/virtualbox
     # According to:
     # https://github.com/actions/runner-images/blob/main/images/macos/macos-11-Readme.md
     # https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md
     # -> macos-12 has them but not macos-11
     # -> don't use macos-latest for safety
-    runs-on: ${{ matrix.platform }}
+    runs-on: ${{ matrix.os || 'macos-12' }}
+    needs: pre
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - tox_env: lint
-            platform: ubuntu-latest
-            skip_vagrant: true
-          - tox_env: py39,py39-devel
-            PREFIX: PYTEST_REQPASS=11
-            platform: macos-12
-            python_version: "3.9"
-          - tox_env: py310,py310-devel
-            PREFIX: PYTEST_REQPASS=11
-            platform: macos-12
-            python_version: "3.10"
-          - tox_env: packaging
-            platform: ubuntu-latest
-            skip_vagrant: true
-
+      matrix: ${{ fromJson(needs.pre.outputs.matrix) }}
+    env:
+      PYTEST_REQPASS: "11"
     steps:
       - name: Check vagrant presence
         run: |
           vagrant version
           vagrant plugin list
-        if: ${{ ! matrix.skip_vagrant }}
+        if: ${{ contains(matrix.name, 'py') }}
 
       - name: Check out src from Git
         uses: actions/checkout@v3
@@ -57,7 +63,7 @@ jobs:
 
       - name: Enable vagrant box caching
         uses: actions/cache@v3
-        if: ${{ ! matrix.skip_vagrant }}
+        if: ${{ contains(matrix.name, 'py') }}
         with:
           path: |
             ~/.vagrant.d/boxes
@@ -78,12 +84,11 @@ jobs:
       - name: Create test box
         run: |
           ./tools/create_testbox.sh
-        if: ${{ ! matrix.skip_vagrant }}
+        if: ${{ contains(matrix.name, 'py') }}
 
-      - name: Run tox -e ${{ matrix.tox_env }}
+      - name: Run tox -e ${{ matrix.passed_name }}
         run: |
-          echo "${{ matrix.PREFIX }} tox -e ${{ matrix.tox_env }}"
-          ${{ matrix.PREFIX }} tox -e ${{ matrix.tox_env }}
+          tox -e ${{ matrix.passed_name }}
 
   check:
     needs:
