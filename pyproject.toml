@@ -5,5 +5,11 @@ requires = [
 ]
 build-backend = "setuptools.build_meta"
 
+[tool.pytest]
+addopts = "-v -rxXs --doctest-modules --durations 10 --no-cov-on-fail --cov=molecule_vagrant --cov-report term-missing:skip-covered"
+doctest_optionflags = "ALLOW_UNICODE ELLIPSIS"
+junit_suite_name = "molecule_test_suite"
+norecursedirs = "dist doc build .tox .eggs test/scenarios test/resources"
+
 [tool.setuptools_scm]
 local_scheme = "no-local-version"
