@@ -7,5 +7,4 @@
     - name: Sample task  # noqa command-instead-of-shell
       ansible.builtin.shell:
         cmd: uname
-        warn: false
       changed_when: false
