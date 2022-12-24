@@ -31,7 +31,7 @@ jobs:
           - tox_env: lint
             platform: ubuntu-latest
             skip_vagrant: true
-          - tox_env: py38,py38-devel
+          - tox_env: py38
             PREFIX: PYTEST_REQPASS=11
             platform: macos-12
             python_version: "3.8"
