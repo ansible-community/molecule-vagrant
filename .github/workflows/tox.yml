@@ -31,10 +31,6 @@ jobs:
           - tox_env: lint
             platform: ubuntu-latest
             skip_vagrant: true
-          - tox_env: py38,py38-devel
-            PREFIX: PYTEST_REQPASS=11
-            platform: macos-12
-            python_version: "3.8"
           - tox_env: py39,py39-devel
             PREFIX: PYTEST_REQPASS=11
             platform: macos-12
@@ -55,27 +51,24 @@ jobs:
         if: ${{ ! matrix.skip_vagrant }}
 
       - name: Check out src from Git
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0 # needed by setuptools-scm
 
       - name: Enable vagrant box caching
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         if: ${{ ! matrix.skip_vagrant }}
         with:
           path: |
             ~/.vagrant.d/boxes
           key: ${{ runner.os }}-${{ hashFiles('tools/Vagrantfile') }}
 
-      - name: Install a default Python
-        uses: actions/setup-python@v2
-
       # Be sure to install the version of python needed by a specific test, if necessary
       - name: Set up Python version
         uses: actions/setup-python@v2
-        if: ${{ matrix.python_version }}
         with:
-          python-version: ${{ matrix.python_version }}
+          python-version: ${{ matrix.python_version || '3.9' }}
+          cache: pip
 
       - name: Install dependencies
         run: |

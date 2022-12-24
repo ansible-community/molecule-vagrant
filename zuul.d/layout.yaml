@@ -21,19 +21,8 @@
       tox_envlist: py39
     timeout: 5400  # 1.5h
 
-- job:
-    name: molecule-vagrant-fedora-py38
-    description: Run py38 tox environment
-    parent: ansible-tox-py38
-    nodeset: fedora-latest-1vcpu
-    attempts: 2
-    vars:
-      tox_envlist: py38
-    timeout: 5400  # 1.5h
-
 - project:
     check:
       jobs: &defaults
         - molecule-vagrant-fedora-py310
         - molecule-vagrant-fedora-py39
-        - molecule-vagrant-fedora-py38
