@@ -31,10 +31,6 @@ jobs:
           - tox_env: lint
             platform: ubuntu-latest
             skip_vagrant: true
-          - tox_env: py38
-            PREFIX: PYTEST_REQPASS=11
-            platform: macos-12
-            python_version: "3.8"
           - tox_env: py39,py39-devel
             PREFIX: PYTEST_REQPASS=11
             platform: macos-12
@@ -71,7 +67,7 @@ jobs:
       - name: Set up Python version
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python_version || '3.8' }}
+          python-version: ${{ matrix.python_version || '3.9' }}
           cache: pip
 
       - name: Install dependencies
