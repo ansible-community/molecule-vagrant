@@ -65,7 +65,7 @@ jobs:
 
       # Be sure to install the version of python needed by a specific test, if necessary
       - name: Set up Python version
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python_version || '3.9' }}
           cache: pip
