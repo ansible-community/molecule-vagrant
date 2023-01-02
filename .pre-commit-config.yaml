@@ -22,7 +22,7 @@ repos:
         # https://github.com/pre-commit/pre-commit-hooks/issues/273
         args: ["--unsafe"]
   - repo: https://github.com/PyCQA/doc8.git
-    rev: v1.0.0
+    rev: v1.1.1
     hooks:
       - id: doc8
   - repo: https://github.com/psf/black
@@ -68,7 +68,7 @@ repos:
         #       use jinja templating, this will often fail and the syntax
         #       error will be discovered in execution anyway)
   - repo: https://github.com/ansible/ansible-lint.git
-    rev: v6.10.0
+    rev: v6.10.2
     hooks:
       - id: ansible-lint
         always_run: true
