@@ -39,7 +39,7 @@ jobs:
             PREFIX: PYTEST_REQPASS=11
             platform: macos-12
             python_version: "3.10"
-          - tox_env: packaging
+          - tox_env: pkg
             platform: ubuntu-latest
             skip_vagrant: true
 
